@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.Models;
+namespace Library.api.Models;
 
 [Microsoft.EntityFrameworkCore.Index("Word", Name = "UQ__TagWords__95B50108BBB35E5F", IsUnique = true)]
 public partial class TagWord

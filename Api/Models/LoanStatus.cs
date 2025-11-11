@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.Models;
+namespace Library.api.Models;
 
 [Table("LoanStatus")]
 public partial class LoanStatus

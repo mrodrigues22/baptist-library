@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations; // Add this using directive
 
-namespace Library.Models
+namespace Library.api.Models
 {
     public class ApplicationUser : IdentityUser // Correct inheritance
     {

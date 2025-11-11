@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Library.DTOs;
+namespace Library.api.DTOs.Book;
 
-public class BookDetailDTO
+public class BookDTO
 {
     public int Id { get; set; }
 
