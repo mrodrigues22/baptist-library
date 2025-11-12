@@ -22,6 +22,7 @@ namespace Api.Controllers
         {
             List<int> statusIds = new List<int> { 1, 2, 5 };
             var books = _context.Books
+                .Where(b => b.IsActive)
                 .Include(b => b.Publisher)
                 .Include(b => b.BookAuthors)
                     .ThenInclude(ba => ba.Author)
@@ -44,7 +45,7 @@ namespace Api.Controllers
                     .ThenInclude(bt => bt.TagWord)
                 .Include(b => b.CreatedByUser)
                 .Include(b => b.ModifiedByUser)
-                .Where(b => b.Id == id)
+                .Where(b => b.Id == id && b.IsActive)
                 .Select(b => b.ToBookDTO())
                 .FirstOrDefault();
             
@@ -169,6 +170,171 @@ namespace Api.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetBook), new { id = book.Id }, new { id = book.Id, message = "Book created successfully" });
+        }
+
+        // PUT: api/books/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDTO bookDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User must be authenticated to update a book.");
+            }
+
+            // Find the existing book
+            var book = await _context.Books
+                .Include(b => b.BookAuthors)
+                .Include(b => b.BookTags)
+                .Include(b => b.BookCategories)
+                .FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
+
+            if (book == null)
+            {
+                return NotFound($"Book with ID {id} not found.");
+            }
+
+            // Process Publisher
+            var publisher = await _context.Publishers
+                .FirstOrDefaultAsync(p => p.Name.ToLower() == bookDto.PublisherName.ToLower());
+            if (publisher == null)
+            {
+                publisher = new Publisher 
+                { 
+                    Name = bookDto.PublisherName, 
+                    IsActive = true 
+                };
+                _context.Publishers.Add(publisher);
+                await _context.SaveChangesAsync();
+            }
+
+            // Update book properties using mapper
+            book.UpdateBookFromDTO(bookDto);
+            book.PublisherId = publisher.Id;
+            book.ModifiedDate = DateTime.Now;
+            book.ModifiedByUserId = userId;
+
+            // Update Authors - remove old ones and add new ones
+            _context.BookAuthors.RemoveRange(book.BookAuthors);
+            
+            var authorNames = bookDto.AuthorNames
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Select(n => n.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var authorName in authorNames)
+            {
+                var author = await _context.Authors
+                    .FirstOrDefaultAsync(a => a.FullName.ToLower() == authorName.ToLower());
+                if (author == null)
+                {
+                    author = new Author
+                    {
+                        FullName = authorName,
+                        IsActive = true
+                    };
+                    _context.Authors.Add(author);
+                    await _context.SaveChangesAsync();
+                }
+                _context.BookAuthors.Add(new BookAuthor { BookId = book.Id, AuthorId = author.Id });
+            }
+
+            // Update Tag Words - remove old ones and add new ones
+            _context.BookTags.RemoveRange(book.BookTags);
+            
+            var tagWords = bookDto.TagWords
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var tagWord in tagWords)
+            {
+                var tag = await _context.TagWords
+                    .FirstOrDefaultAsync(t => t.Word.ToLower() == tagWord.ToLower());
+                if (tag == null)
+                {
+                    tag = new TagWord
+                    {
+                        Word = tagWord,
+                        IsActive = true
+                    };
+                    _context.TagWords.Add(tag);
+                    await _context.SaveChangesAsync();
+                }
+                _context.BookTags.Add(new BookTag { BookId = book.Id, TagWordId = tag.Id });
+            }
+
+            // Update Categories - remove old ones and add new ones
+            _context.BookCategories.RemoveRange(book.BookCategories);
+            
+            var categoryNames = bookDto.Categories
+                .Where(g => !string.IsNullOrWhiteSpace(g))
+                .Select(g => g.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var categoryName in categoryNames)
+            {
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(g => g.Description.ToLower() == categoryName.ToLower());
+                if (category == null)
+                {
+                    category = new Category
+                    {
+                        Description = categoryName,
+                        IsActive = true
+                    };
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync();
+                }
+                _context.BookCategories.Add(new BookCategory { BookId = book.Id, GenreId = category.Id });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { id = book.Id, message = "Book updated successfully" });
+        }
+
+        // DELETE: api/books/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBook(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User must be authenticated to delete a book.");
+            }
+
+            var book = await _context.Books
+                .Include(b => b.BookAuthors)
+                .Include(b => b.BookTags)
+                .Include(b => b.BookCategories)
+                .Include(b => b.Loans)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (book == null)
+            {
+                return NotFound($"Book with ID {id} not found.");
+            }
+
+            // Check if book has active loans
+            var hasActiveLoans = book.Loans.Any(l => l.Status.Id == 1 || l.Status.Id == 2 || l.Status.Id == 5);
+            if (hasActiveLoans)
+            {
+                return BadRequest("Cannot delete book with active loans.");
+            }
+
+            book.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

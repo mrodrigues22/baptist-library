@@ -61,5 +61,18 @@ namespace Library.api.Mappers
                 IsActive = true
             };
         }
+
+        public static void UpdateBookFromDTO(this Book book, UpdateBookDTO updateBookDTO)
+        {
+            book.Title = updateBookDTO.Title;
+            book.Edition = updateBookDTO.Edition;
+            book.PublicationYear = updateBookDTO.PublicationYear;
+            book.Volume = updateBookDTO.Volume;
+            book.QuantityAvailable = updateBookDTO.QuantityAvailable;
+            book.Isbn = updateBookDTO.Isbn;
+            book.Cdd = updateBookDTO.Cdd;
+            book.LibraryLocation = updateBookDTO.LibraryLocation;
+            book.Origin = updateBookDTO.Origin;
+        }
     }
 }
