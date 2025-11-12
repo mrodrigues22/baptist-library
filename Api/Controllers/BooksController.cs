@@ -26,7 +26,7 @@ namespace Api.Controllers
             return Ok(booksDto);
         }
         
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetBook(int id)
         {
             var book = await _bookRepository.GetActiveBookByIdAsync(id);
@@ -71,7 +71,7 @@ namespace Api.Controllers
         }
 
         // PUT: api/books/{id}
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDTO bookDto)
         {
             if (!ModelState.IsValid)
@@ -116,7 +116,7 @@ namespace Api.Controllers
         }
 
         // DELETE: api/books/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

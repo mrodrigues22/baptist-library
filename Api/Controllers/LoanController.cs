@@ -32,7 +32,7 @@ namespace Api.Controllers
             return Ok(loansDto);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetLoanById(int id)
         {
             var loan = await _loanRepository.GetLoanByIdAsync(id);
