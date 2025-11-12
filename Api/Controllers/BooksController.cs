@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Library.Api.DTOs.Book;
 using Library.Api.Mappers;
 using Api.Interfaces;
+using Api.Helpers;
 
 namespace Api.Controllers
 {
@@ -19,9 +20,9 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBooks()
+        public async Task<IActionResult> GetBooks([FromQuery] QueryObject queryObject)
         {
-            var books = await _bookRepository.GetAllActiveBooksAsync();
+            var books = await _bookRepository.GetAllActiveBooksAsync(queryObject);
             var booksDto = books.Select(b => b.ToBooksDTO());
             return Ok(booksDto);
         }

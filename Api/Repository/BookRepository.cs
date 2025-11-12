@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.Helpers;
 using Api.Interfaces;
 using Library.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,14 +18,37 @@ namespace Api.Repository
             _context = context;
         }
 
-        public async Task<List<Book>> GetAllActiveBooksAsync()
+        public async Task<List<Book>> GetAllActiveBooksAsync(QueryObject queryObject)
         {
-            return await _context.Books
+            var books = _context.Books
                 .Where(b => b.IsActive)
                 .Include(b => b.Publisher)
                 .Include(b => b.BookAuthors)
                     .ThenInclude(ba => ba.Author)
-                .ToListAsync();
+                .Include(b => b.BookTags)
+                    .ThenInclude(bt => bt.TagWord)
+                .AsSplitQuery()
+                .AsQueryable();
+            
+            if (!string.IsNullOrWhiteSpace(queryObject.SearchTerm))
+            {
+                var tokens = queryObject.SearchTerm.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var token in tokens)
+                {
+                    var pattern = $"%{token}%";
+                    books = books.Where(b =>
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Title), pattern) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Isbn), pattern) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Publisher.Name), pattern) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Cdd), pattern) ||
+                        b.BookAuthors.Any(ba => EF.Functions.ILike(ApplicationDbContext.Unaccent(ba.Author.FullName), pattern)) ||
+                        b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), pattern))
+                    );
+                }
+            }
+            
+            return await books.ToListAsync();
         }
 
         public async Task<Book?> GetActiveBookByIdAsync(int id)
