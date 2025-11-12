@@ -7,7 +7,7 @@ public class SettingDTO
     public int Id { get; set; }
 
     [Display(Name = "Configuração")]
-    public string Setting { get; set; }
+    public required string Setting { get; set; }
 
     [Display(Name = "Valor")]
     public int Value { get; set; }
