@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Api.Interfaces;
 using Library.Api.Models;
-using Library.Api.DTOs.Book;
-using Library.Api.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Repository
@@ -45,95 +43,68 @@ namespace Api.Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Book> CreateBookAsync(CreateBookDTO bookDto, string userId)
+        public async Task<Book> CreateBookAsync(Book book, List<string> authorNames, List<string> tagWords, List<string> categories)
         {
-            // Process Publisher
-            var publisher = await _context.Publishers
-                .FirstOrDefaultAsync(p => p.Name.ToLower() == bookDto.PublisherName.ToLower());
-            if (publisher == null)
-            {
-                publisher = new Publisher 
-                { 
-                    Name = bookDto.PublisherName, 
-                    IsActive = true 
-                };
-                _context.Publishers.Add(publisher);
-                await _context.SaveChangesAsync();
-            }
-
-            // Create the new Book using mapper
-            var book = bookDto.ToBookFromCreateDTO();
-            book.PublisherId = publisher.Id;
-            book.CreatedDate = DateTime.UtcNow;
-            book.ModifiedDate = DateTime.UtcNow;
-            book.CreatedByUserId = userId;
-
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
             // Process Authors
-            await ProcessAuthorsAsync(book.Id, bookDto.AuthorNames);
+            await ProcessAuthorsAsync(book.Id, authorNames);
 
             // Process Tag Words
-            await ProcessTagWordsAsync(book.Id, bookDto.TagWords);
+            await ProcessTagWordsAsync(book.Id, tagWords);
 
             // Process Categories
-            await ProcessCategoriesAsync(book.Id, bookDto.Categories);
+            await ProcessCategoriesAsync(book.Id, categories);
 
             await _context.SaveChangesAsync();
 
             return book;
         }
 
-        public async Task<Book?> UpdateBookAsync(int id, UpdateBookDTO bookDto, string userId)
+        public async Task<Book?> UpdateBookAsync(int id, Book updatedBook, List<string> authorNames, List<string> tagWords, List<string> categories)
         {
             // Find the existing book
-            var book = await _context.Books
+            var existingBook = await _context.Books
                 .Include(b => b.BookAuthors)
                 .Include(b => b.BookTags)
                 .Include(b => b.BookCategories)
                 .FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
 
-            if (book == null)
+            if (existingBook == null)
             {
                 return null;
             }
 
-            // Process Publisher
-            var publisher = await _context.Publishers
-                .FirstOrDefaultAsync(p => p.Name.ToLower() == bookDto.PublisherName.ToLower());
-            if (publisher == null)
-            {
-                publisher = new Publisher 
-                { 
-                    Name = bookDto.PublisherName, 
-                    IsActive = true 
-                };
-                _context.Publishers.Add(publisher);
-                await _context.SaveChangesAsync();
-            }
-
-            // Update book properties using mapper
-            book.UpdateBookFromDTO(bookDto);
-            book.PublisherId = publisher.Id;
-            book.ModifiedDate = DateTime.UtcNow;
-            book.ModifiedByUserId = userId;
+            // Update book properties
+            existingBook.Title = updatedBook.Title;
+            existingBook.Edition = updatedBook.Edition;
+            existingBook.PublisherId = updatedBook.PublisherId;
+            existingBook.PublicationYear = updatedBook.PublicationYear;
+            existingBook.Volume = updatedBook.Volume;
+            existingBook.QuantityAvailable = updatedBook.QuantityAvailable;
+            existingBook.Isbn = updatedBook.Isbn;
+            existingBook.Cdd = updatedBook.Cdd;
+            existingBook.LibraryLocation = updatedBook.LibraryLocation;
+            existingBook.Origin = updatedBook.Origin;
+            existingBook.ModifiedDate = updatedBook.ModifiedDate;
+            existingBook.ModifiedByUserId = updatedBook.ModifiedByUserId;
 
             // Update Authors - remove old ones and add new ones
-            _context.BookAuthors.RemoveRange(book.BookAuthors);
-            await ProcessAuthorsAsync(book.Id, bookDto.AuthorNames);
+            _context.BookAuthors.RemoveRange(existingBook.BookAuthors);
+            await ProcessAuthorsAsync(existingBook.Id, authorNames);
 
             // Update Tag Words - remove old ones and add new ones
-            _context.BookTags.RemoveRange(book.BookTags);
-            await ProcessTagWordsAsync(book.Id, bookDto.TagWords);
+            _context.BookTags.RemoveRange(existingBook.BookTags);
+            await ProcessTagWordsAsync(existingBook.Id, tagWords);
 
             // Update Categories - remove old ones and add new ones
-            _context.BookCategories.RemoveRange(book.BookCategories);
-            await ProcessCategoriesAsync(book.Id, bookDto.Categories);
+            _context.BookCategories.RemoveRange(existingBook.BookCategories);
+            await ProcessCategoriesAsync(existingBook.Id, categories);
 
             await _context.SaveChangesAsync();
 
-            return book;
+            return existingBook;
         }
 
         public async Task<bool> DeleteBookAsync(int id)
@@ -157,6 +128,25 @@ namespace Api.Repository
             return await _context.Loans
                 .Where(l => l.BookId == bookId)
                 .AnyAsync(l => l.Status.Id == 1 || l.Status.Id == 2 || l.Status.Id == 5);
+        }
+
+        public async Task<Publisher> GetOrCreatePublisherAsync(string publisherName)
+        {
+            var publisher = await _context.Publishers
+                .FirstOrDefaultAsync(p => p.Name.ToLower() == publisherName.ToLower());
+            
+            if (publisher == null)
+            {
+                publisher = new Publisher 
+                { 
+                    Name = publisherName, 
+                    IsActive = true 
+                };
+                _context.Publishers.Add(publisher);
+                await _context.SaveChangesAsync();
+            }
+
+            return publisher;
         }
 
         private async Task ProcessAuthorsAsync(int bookId, List<string> authorNames)

@@ -55,9 +55,19 @@ namespace Api.Controllers
                 return Unauthorized("User must be authenticated to create a book.");
             }
 
-            var book = await _bookRepository.CreateBookAsync(bookDto, userId);
+            // Map DTO to Model and handle Publisher
+            var book = bookDto.ToBookFromCreateDTO();
+            
+            // Process Publisher
+            var publisher = await _bookRepository.GetOrCreatePublisherAsync(bookDto.PublisherName);
+            book.PublisherId = publisher.Id;
+            book.CreatedDate = DateTime.UtcNow;
+            book.ModifiedDate = DateTime.UtcNow;
+            book.CreatedByUserId = userId;
 
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, new { id = book.Id, message = "Book created successfully" });
+            var createdBook = await _bookRepository.CreateBookAsync(book, bookDto.AuthorNames, bookDto.TagWords, bookDto.Categories);
+
+            return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook.ToBookDTO());
         }
 
         // PUT: api/books/{id}
@@ -75,7 +85,27 @@ namespace Api.Controllers
                 return Unauthorized("User must be authenticated to update a book.");
             }
 
-            var book = await _bookRepository.UpdateBookAsync(id, bookDto, userId);
+            // Map DTO to Model and handle Publisher
+            var updatedBook = new Book
+            {
+                Title = bookDto.Title,
+                Edition = bookDto.Edition,
+                PublicationYear = bookDto.PublicationYear,
+                Volume = bookDto.Volume,
+                QuantityAvailable = bookDto.QuantityAvailable,
+                Isbn = bookDto.Isbn,
+                Cdd = bookDto.Cdd,
+                LibraryLocation = bookDto.LibraryLocation,
+                Origin = bookDto.Origin,
+                ModifiedDate = DateTime.UtcNow,
+                ModifiedByUserId = userId
+            };
+
+            // Process Publisher
+            var publisher = await _bookRepository.GetOrCreatePublisherAsync(bookDto.PublisherName);
+            updatedBook.PublisherId = publisher.Id;
+
+            var book = await _bookRepository.UpdateBookAsync(id, updatedBook, bookDto.AuthorNames, bookDto.TagWords, bookDto.Categories);
 
             if (book == null)
             {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.Api.Models;
-using Library.Api.DTOs.Book;
 
 namespace Api.Interfaces
 {
@@ -11,9 +10,10 @@ namespace Api.Interfaces
     {
         Task<List<Book>> GetAllActiveBooksAsync();
         Task<Book?> GetActiveBookByIdAsync(int id);
-        Task<Book> CreateBookAsync(CreateBookDTO bookDto, string userId);
-        Task<Book?> UpdateBookAsync(int id, UpdateBookDTO bookDto, string userId);
+        Task<Book> CreateBookAsync(Book book, List<string> authorNames, List<string> tagWords, List<string> categories);
+        Task<Book?> UpdateBookAsync(int id, Book book, List<string> authorNames, List<string> tagWords, List<string> categories);
         Task<bool> DeleteBookAsync(int id);
         Task<bool> BookHasActiveLoansAsync(int bookId);
+        Task<Publisher> GetOrCreatePublisherAsync(string publisherName);
     }
 }
