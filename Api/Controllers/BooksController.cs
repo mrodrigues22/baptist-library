@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Library.api.Models;
+using Library.Api.Models;
 using System.Security.Claims;
-using Library.api.DTOs.Book;
-using Library.api.Mappers;
+using Library.Api.DTOs.Book;
+using Library.Api.Mappers;
 
 namespace Api.Controllers
 {

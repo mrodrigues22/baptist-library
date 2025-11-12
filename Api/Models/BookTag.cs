@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.api.Models;
+namespace Library.Api.Models;
 
 [Table("BookTag")]
 [Microsoft.EntityFrameworkCore.Index("BookId", "TagWordId", Name = "UQ_BookTag", IsUnique = true)]

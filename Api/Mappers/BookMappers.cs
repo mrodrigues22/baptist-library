@@ -1,7 +1,7 @@
-using Library.api.DTOs.Book;
-using Library.api.Models;
+using Library.Api.DTOs.Book;
+using Library.Api.Models;
 
-namespace Library.api.Mappers
+namespace Library.Api.Mappers
 {
     public static class BookMappers
     {

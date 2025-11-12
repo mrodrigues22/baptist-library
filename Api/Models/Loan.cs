@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.api.Models;
+namespace Library.Api.Models;
 
 [Table("Loan")]
 [Microsoft.EntityFrameworkCore.Index("RequesterUserId", Name = "IX_Loan_RequesterUserId")]
