@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Api.DTOs.Loan;
 using Api.Interfaces;
 using Library.Api.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,7 @@ namespace Api.Controllers
 {
     [Route("api/loans")]
     [ApiController]
+    [Authorize]
     public class LoansController : ControllerBase
     {
         private readonly ILoanRepository _loanRepository;
