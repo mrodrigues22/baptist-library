@@ -27,5 +27,18 @@ namespace Api.Controllers
             var loansDto = loans.Select(l => l.ToLoansDTO());
             return Ok(loansDto);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetLoanById(int id)
+        {
+            var loan = await _loanRepository.GetLoanByIdAsync(id);
+            
+            if (loan == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(loan.ToLoanDTO());
+        }
     }
 }

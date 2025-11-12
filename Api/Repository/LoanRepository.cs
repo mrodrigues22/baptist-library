@@ -23,5 +23,16 @@ namespace Api.Repository
                 .Include(l => l.Status)
                 .ToListAsync();
         }
+
+        public async Task<Loan?> GetLoanByIdAsync(int id)
+        {
+            return await _context.Loans
+                .Include(l => l.Book)
+                .Include(l => l.RequesterUser)
+                .Include(l => l.Status)
+                .Include(l => l.CheckedOutByUser)
+                .Include(l => l.ReceivedByUser)
+                .FirstOrDefaultAsync(l => l.Id == id);
+        }
     }
 }

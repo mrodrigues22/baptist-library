@@ -9,5 +9,6 @@ namespace Api.Interfaces
     public interface ILoanRepository
     {
         Task<List<Loan>> GetAllLoansAsync();
+        Task<Loan?> GetLoanByIdAsync(int id);
     }
 }
