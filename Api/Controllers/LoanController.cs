@@ -17,6 +17,7 @@ namespace Api.Controllers
 {
     [Route("api/loans")]
     [ApiController]
+    [Authorize]
     public class LoansController : ControllerBase
     {
         private readonly ILoanRepository _loanRepository;
@@ -47,6 +48,7 @@ namespace Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         public async Task<IActionResult> CreateLoan([FromBody] CreateLoanDTO loanDto)
         {
             if (!ModelState.IsValid)
@@ -65,6 +67,7 @@ namespace Api.Controllers
         }
 
         [HttpPost("createloanforself")]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário,Membro")]
         public async Task<IActionResult> CreateLoanForSelf([FromBody] CreateLoanForSelfDTO loanDto)
         {
             if (!ModelState.IsValid)
@@ -83,6 +86,7 @@ namespace Api.Controllers
         }
 
         [HttpPatch("checkout/{id:int}")]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         public async Task<IActionResult> CheckOut(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -102,6 +106,7 @@ namespace Api.Controllers
         }
 
         [HttpPatch("checkback/{id:int}")]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         public async Task<IActionResult> CheckBack(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -118,6 +123,26 @@ namespace Api.Controllers
             }
 
             return Ok(loan.ToLoanDTO());
+        }
+
+        [HttpPost("request/{bookId:int}")]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário,Membro")]
+        public async Task<IActionResult> RequestLoan(int bookId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _loanRepository.CreateLoanForSelfWithValidationAsync(bookId, userId);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.ErrorMessage });
+            }
+
+            return CreatedAtAction(nameof(GetLoanById), new { id = result.Loan!.Id }, result.Loan.ToLoanDTO());
         }
     
 

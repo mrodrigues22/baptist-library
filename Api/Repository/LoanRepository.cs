@@ -136,5 +136,65 @@ namespace Api.Repository
 
             return await GetLoanByIdAsync(id);
         }
+
+        public async Task<(bool Success, string? ErrorMessage, Loan? Loan)> CreateLoanForSelfWithValidationAsync(int bookId, string userId)
+        {
+            var book = await _context.Books
+                .Include(b => b.Loans)
+                .FirstOrDefaultAsync(b => b.Id == bookId);
+
+            if (book == null)
+            {
+                return (false, "Book not found.", null);
+            }
+
+            // Check if book is available
+            var activeLoansCount = book.Loans.Count(l => l.StatusId == 1 || l.StatusId == 2 || l.StatusId == 5);
+            if (book.QuantityAvailable <= activeLoansCount)
+            {
+                return (false, "This book is not available.", null);
+            }
+
+            // Check if user already has an active loan for this book
+            var existingLoan = await _context.Loans
+                .FirstOrDefaultAsync(l => l.BookId == bookId &&
+                                     l.RequesterUserId == userId &&
+                                     l.ReturnDate == null);
+
+            if (existingLoan != null)
+            {
+                return (false, "You already have an active loan for this book.", null);
+            }
+
+            // Check if user has reached loan limit
+            var userActiveLoansCount = await _context.Loans
+                .CountAsync(l => l.RequesterUserId == userId && 
+                            (l.StatusId == 1 || l.StatusId == 2 || l.StatusId == 5));
+
+            var loanLimit = await _context.Settings
+                .Where(s => s.Id == 1)
+                .Select(s => s.Value)
+                .FirstOrDefaultAsync();
+
+            if (userActiveLoansCount >= loanLimit)
+            {
+                return (false, "You have reached the limit of books you can borrow.", null);
+            }
+
+            // Create the loan
+            var loan = new Loan
+            {
+                BookId = bookId,
+                RequesterUserId = userId,
+                StatusId = 1,
+                RequestDate = DateTime.UtcNow
+            };
+
+            await _context.Loans.AddAsync(loan);
+            await _context.SaveChangesAsync();
+
+            var createdLoan = await GetLoanByIdAsync(loan.Id);
+            return (true, null, createdLoan);
+        }
     }
 }

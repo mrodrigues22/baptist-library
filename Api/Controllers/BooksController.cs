@@ -8,6 +8,7 @@ using Library.Api.Mappers;
 using Api.Interfaces;
 using Api.Helpers;
 using Api.Helpers.Book;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Controllers
 {
@@ -44,6 +45,7 @@ namespace Api.Controllers
 
         // POST: api/books
         [HttpPost]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         public async Task<IActionResult> CreateBook([FromBody] CreateBookDTO bookDto)
         {
             if (!ModelState.IsValid)
@@ -74,6 +76,7 @@ namespace Api.Controllers
 
         // PUT: api/books/{id}
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDTO bookDto)
         {
             if (!ModelState.IsValid)
@@ -119,6 +122,7 @@ namespace Api.Controllers
 
         // DELETE: api/books/{id}
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
