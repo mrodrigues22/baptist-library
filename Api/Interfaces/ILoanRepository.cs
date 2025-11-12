@@ -15,5 +15,6 @@ namespace Api.Interfaces
         Task<Loan?> GetLoanByIdAsync(int id);
         Task<Loan> CreateLoanAsync(Loan loan);
         Task<Loan?> CheckOut(int id, string userId);
+        Task<Loan?> CheckBack(int id, string userId);
     }
 }

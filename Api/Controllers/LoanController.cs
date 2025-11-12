@@ -100,6 +100,25 @@ namespace Api.Controllers
 
             return Ok(loan.ToLoanDTO());
         }
+
+        [HttpPatch("checkback/{id:int}")]
+        public async Task<IActionResult> CheckBack(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var loan = await _loanRepository.CheckBack(id, userId);
+            
+            if (loan == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(loan.ToLoanDTO());
+        }
     
 
     }
