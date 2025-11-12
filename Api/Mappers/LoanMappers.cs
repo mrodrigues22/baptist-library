@@ -42,13 +42,13 @@ namespace Library.Api.Mappers
             };
         }
 
-        public static Loan ToLoanFromCreateDTO(this CreateLoanDTO createLoanDTO)
+        public static Loan ToLoanFromCreateDTO(this CreateLoanDTO createLoanDTO, string checkedOutByUserId)
         {
             return new Loan
             {
                 BookId = createLoanDTO.BookId,
                 RequesterUserId = createLoanDTO.RequesterUserId,
-                CheckedOutBy = createLoanDTO.CheckedOutBy,
+                CheckedOutBy = checkedOutByUserId,
                 RequestDate = DateTime.UtcNow,
                 StatusId = 2
             };

@@ -17,7 +17,6 @@ namespace Api.Controllers
 {
     [Route("api/loans")]
     [ApiController]
-    [Authorize]
     public class LoansController : ControllerBase
     {
         private readonly ILoanRepository _loanRepository;
@@ -54,7 +53,14 @@ namespace Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateDTO());
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateDTO(userId));
             return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
         }
 
@@ -75,5 +81,26 @@ namespace Api.Controllers
             var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateForSelfDTO(userId));
             return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
         }
+
+        [HttpPatch("checkout/{id:int}")]
+        public async Task<IActionResult> CheckOut(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var loan = await _loanRepository.CheckOut(id, userId);
+            
+            if (loan == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(loan.ToLoanDTO());
+        }
+    
+
     }
 }

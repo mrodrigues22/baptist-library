@@ -103,5 +103,21 @@ namespace Api.Repository
 
             return await GetLoanByIdAsync(loan.Id) ?? loan;
         }
+
+        public async Task<Loan?> CheckOut(int id, string userId)
+        {
+            var loan = await _context.Loans.FindAsync(id);
+            if (loan == null || loan.StatusId != 1)
+            {
+                return null;
+            }
+
+            loan.StatusId = 2;
+            loan.CheckoutDate = DateTime.UtcNow;
+            loan.CheckedOutBy = userId;
+            await _context.SaveChangesAsync();
+
+            return await GetLoanByIdAsync(id);
+        }
     }
 }
