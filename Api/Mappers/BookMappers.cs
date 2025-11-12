@@ -44,5 +44,22 @@ namespace Library.api.Mappers
                 Authors = book.BookAuthors.Select(ba => ba.Author.FullName).ToList()
             };
         }
+
+        public static Book ToBookFromCreateDTO(this CreateBookDTO createBookDTO)
+        {
+            return new Book
+            {
+                Title = createBookDTO.Title,
+                Edition = createBookDTO.Edition,
+                PublicationYear = createBookDTO.PublicationYear,
+                Volume = createBookDTO.Volume,
+                QuantityAvailable = createBookDTO.QuantityAvailable,
+                Isbn = createBookDTO.Isbn,
+                Cdd = createBookDTO.Cdd,
+                LibraryLocation = createBookDTO.LibraryLocation,
+                Origin = createBookDTO.Origin,
+                IsActive = true
+            };
+        }
     }
 }

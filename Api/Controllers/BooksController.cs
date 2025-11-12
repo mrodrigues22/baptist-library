@@ -84,24 +84,12 @@ namespace Api.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Create the new Book
-            var book = new Book
-            {
-                Title = bookDto.Title,
-                Edition = bookDto.Edition,
-                PublicationYear = bookDto.PublicationYear,
-                Volume = bookDto.Volume,
-                PublisherId = publisher.Id,
-                QuantityAvailable = bookDto.QuantityAvailable,
-                Isbn = bookDto.Isbn,
-                Cdd = bookDto.Cdd,
-                LibraryLocation = bookDto.LibraryLocation,
-                Origin = bookDto.Origin,
-                CreatedDate = DateTime.Now,
-                ModifiedDate = DateTime.Now,
-                IsActive = true,
-                CreatedByUserId = userId
-            };
+            // Create the new Book using mapper
+            var book = bookDto.ToBookFromCreateDTO();
+            book.PublisherId = publisher.Id;
+            book.CreatedDate = DateTime.Now;
+            book.ModifiedDate = DateTime.Now;
+            book.CreatedByUserId = userId;
 
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
