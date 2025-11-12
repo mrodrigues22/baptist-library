@@ -1,5 +1,6 @@
 using Api.Data;
 using Api.Interfaces;
+using Api.Repositories;
 using Api.Repository;
 using Api.Services;
 using Library.Api.Models;
@@ -83,6 +84,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
