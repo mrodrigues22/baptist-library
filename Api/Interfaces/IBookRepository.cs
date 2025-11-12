@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.Helpers;
+using Api.Helpers.Book;
 using Library.Api.Models;
 
 namespace Api.Interfaces

@@ -7,6 +7,7 @@ using Library.Api.DTOs.Book;
 using Library.Api.Mappers;
 using Api.Interfaces;
 using Api.Helpers;
+using Api.Helpers.Book;
 
 namespace Api.Controllers
 {

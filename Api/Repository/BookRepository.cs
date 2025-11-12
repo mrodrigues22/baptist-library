@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.Helpers;
+using Api.Helpers.Book;
 using Api.Interfaces;
 using Library.Api.Models;
 using Microsoft.AspNetCore.Http.HttpResults;

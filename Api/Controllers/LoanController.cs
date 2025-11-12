@@ -5,6 +5,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Api.DTOs.Loan;
+using Api.Helpers;
+using Api.Helpers.Loan;
 using Api.Interfaces;
 using Library.Api.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -25,9 +27,9 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetLoans()
+        public async Task<IActionResult> GetLoans([FromQuery] QueryObject queryObject)
         {
-            var loans = await _loanRepository.GetAllLoansAsync();
+            var loans = await _loanRepository.GetAllLoansAsync(queryObject);
             var loansDto = loans.Select(l => l.ToLoansDTO());
             return Ok(loansDto);
         }

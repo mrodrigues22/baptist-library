@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.DTOs.Loan;
+using Api.Helpers;
+using Api.Helpers.Loan;
 using Library.Api.Models;
 
 namespace Api.Interfaces
 {
     public interface ILoanRepository
     {
-        Task<List<Loan>> GetAllLoansAsync();
+        Task<List<Loan>> GetAllLoansAsync(QueryObject queryObject);
         Task<Loan?> GetLoanByIdAsync(int id);
         Task<Loan> CreateLoanAsync(Loan loan);
     }
