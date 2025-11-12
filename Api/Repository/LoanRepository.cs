@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.DTOs.Loan;
 using Api.Interfaces;
+using Library.Api.Mappers;
 using Library.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +35,16 @@ namespace Api.Repository
                 .Include(l => l.CheckedOutByUser)
                 .Include(l => l.ReceivedByUser)
                 .FirstOrDefaultAsync(l => l.Id == id);
+        }
+
+        public async Task<Loan> CreateLoanAsync(Loan loan)
+        {
+            
+
+            await _context.Loans.AddAsync(loan);
+            await _context.SaveChangesAsync();
+
+            return await GetLoanByIdAsync(loan.Id) ?? loan;
         }
     }
 }

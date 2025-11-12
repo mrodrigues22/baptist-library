@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.DTOs.Loan;
 using Api.Interfaces;
 using Library.Api.Mappers;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,17 @@ namespace Api.Controllers
             }
 
             return Ok(loan.ToLoanDTO());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateLoan([FromBody] CreateLoanDTO loanDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateDTO());
+            return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
         }
     }
 }

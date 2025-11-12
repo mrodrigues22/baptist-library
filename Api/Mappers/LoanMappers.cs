@@ -41,5 +41,17 @@ namespace Library.Api.Mappers
                     : null
             };
         }
+
+        public static Loan ToLoanFromCreateDTO(this CreateLoanDTO createLoanDTO)
+        {
+            return new Loan
+            {
+                BookId = createLoanDTO.BookId,
+                RequesterUserId = createLoanDTO.RequesterUserId,
+                CheckedOutBy = createLoanDTO.CheckedOutBy,
+                RequestDate = DateTime.UtcNow,
+                StatusId = 2
+            };
+        }
     }
 }

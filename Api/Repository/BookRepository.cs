@@ -64,8 +64,8 @@ namespace Api.Repository
             // Create the new Book using mapper
             var book = bookDto.ToBookFromCreateDTO();
             book.PublisherId = publisher.Id;
-            book.CreatedDate = DateTime.Now;
-            book.ModifiedDate = DateTime.Now;
+            book.CreatedDate = DateTime.UtcNow;
+            book.ModifiedDate = DateTime.UtcNow;
             book.CreatedByUserId = userId;
 
             _context.Books.Add(book);
@@ -116,7 +116,7 @@ namespace Api.Repository
             // Update book properties using mapper
             book.UpdateBookFromDTO(bookDto);
             book.PublisherId = publisher.Id;
-            book.ModifiedDate = DateTime.Now;
+            book.ModifiedDate = DateTime.UtcNow;
             book.ModifiedByUserId = userId;
 
             // Update Authors - remove old ones and add new ones
