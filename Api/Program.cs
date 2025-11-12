@@ -1,3 +1,5 @@
+using Api.Interfaces;
+using Api.Repository;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -9,6 +11,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IBookRepository, BookRepository>();
 
 var app = builder.Build();
 
