@@ -8,5 +8,7 @@ namespace Api.Helpers
     public class QueryObject
     {
         public string? SearchTerm { get; set; }
+
+        public int? CategoryId { get; set; }
     }
 }

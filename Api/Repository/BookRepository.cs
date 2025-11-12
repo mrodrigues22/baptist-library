@@ -29,7 +29,7 @@ namespace Api.Repository
                     .ThenInclude(bt => bt.TagWord)
                 .AsSplitQuery()
                 .AsQueryable();
-            
+
             if (!string.IsNullOrWhiteSpace(queryObject.SearchTerm))
             {
                 var tokens = queryObject.SearchTerm.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -46,6 +46,10 @@ namespace Api.Repository
                         b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), pattern))
                     );
                 }
+            }
+            if (queryObject.CategoryId.HasValue)
+            {
+                books = books.Where(b => b.BookCategories.Any(bc => bc.GenreId == queryObject.CategoryId.Value));
             }
             
             return await books.ToListAsync();
