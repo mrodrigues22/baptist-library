@@ -10,5 +10,9 @@ namespace Api.Helpers
         public string? SearchTerm { get; set; }
 
         public int? CategoryId { get; set; }
+
+        public string? SortBy { get; set; }
+
+        public bool IsDescending { get; set; } = false;
     }
 }

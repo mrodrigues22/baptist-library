@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Api.Helpers;
 using Api.Interfaces;
 using Library.Api.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Repository
@@ -51,7 +52,35 @@ namespace Api.Repository
             {
                 books = books.Where(b => b.BookCategories.Any(bc => bc.GenreId == queryObject.CategoryId.Value));
             }
-            
+            if(!string.IsNullOrWhiteSpace(queryObject.SortBy))
+            {
+                if (queryObject.SortBy.Equals("title", StringComparison.OrdinalIgnoreCase))
+                {
+                    books = queryObject.IsDescending ? books.OrderByDescending(b => b.Title) : books.OrderBy(b => b.Title);
+                }
+                else if (queryObject.SortBy.Equals("author", StringComparison.OrdinalIgnoreCase))
+                {
+                    books = queryObject.IsDescending ?
+                        books.OrderByDescending(b => b.BookAuthors.Min(ba => ba.Author.FullName)) :
+                        books.OrderBy(b => b.BookAuthors.Min(ba => ba.Author.FullName));
+                }
+                else if (queryObject.SortBy.Equals("publisher", StringComparison.OrdinalIgnoreCase))
+                {
+                    books = queryObject.IsDescending ? books.OrderByDescending(b => b.Publisher.Name) : books.OrderBy(b => b.Publisher.Name);
+                }
+                else if (queryObject.SortBy.Equals("publicationYear", StringComparison.OrdinalIgnoreCase))
+                {
+                    books = queryObject.IsDescending ? books.OrderByDescending(b => b.PublicationYear) : books.OrderBy(b => b.PublicationYear);
+                }
+                else
+                {
+                    books = books.OrderBy(b => b.Title);
+                }
+            }
+            else
+            {
+                books = books.OrderBy(b => b.Title);
+            }
             return await books.ToListAsync();
         }
 
