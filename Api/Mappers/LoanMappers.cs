@@ -53,5 +53,17 @@ namespace Library.Api.Mappers
                 StatusId = 2
             };
         }
+
+        public static Loan ToLoanFromCreateForSelfDTO(this CreateLoanForSelfDTO createLoanForSelfDTO, string userId)
+        {
+            return new Loan
+            {
+                BookId = createLoanForSelfDTO.BookId,
+                RequesterUserId = userId,
+                CheckedOutBy = userId,
+                RequestDate = DateTime.UtcNow,
+                StatusId = 2
+            };
+        }
     }
 }

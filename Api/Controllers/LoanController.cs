@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Api.DTOs.Loan;
 using Api.Interfaces;
@@ -52,6 +53,24 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
             }
             var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateDTO());
+            return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
+        }
+
+        [HttpPost("createloanforself")]
+        public async Task<IActionResult> CreateLoanForSelf([FromBody] CreateLoanForSelfDTO loanDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateForSelfDTO(userId));
             return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
         }
     }
