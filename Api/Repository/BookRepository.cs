@@ -52,25 +52,25 @@ namespace Api.Repository
             {
                 books = books.Where(b => b.BookCategories.Any(bc => bc.GenreId == queryObject.CategoryId.Value));
             }
-            if(!string.IsNullOrWhiteSpace(queryObject.SortBy))
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy))
             {
                 if (queryObject.SortBy.Equals("title", StringComparison.OrdinalIgnoreCase))
                 {
-                    books = queryObject.IsDescending ? books.OrderByDescending(b => b.Title) : books.OrderBy(b => b.Title);
+                    books = queryObject.Descending ? books.OrderByDescending(b => b.Title) : books.OrderBy(b => b.Title);
                 }
                 else if (queryObject.SortBy.Equals("author", StringComparison.OrdinalIgnoreCase))
                 {
-                    books = queryObject.IsDescending ?
+                    books = queryObject.Descending ?
                         books.OrderByDescending(b => b.BookAuthors.Min(ba => ba.Author.FullName)) :
                         books.OrderBy(b => b.BookAuthors.Min(ba => ba.Author.FullName));
                 }
                 else if (queryObject.SortBy.Equals("publisher", StringComparison.OrdinalIgnoreCase))
                 {
-                    books = queryObject.IsDescending ? books.OrderByDescending(b => b.Publisher.Name) : books.OrderBy(b => b.Publisher.Name);
+                    books = queryObject.Descending ? books.OrderByDescending(b => b.Publisher.Name) : books.OrderBy(b => b.Publisher.Name);
                 }
                 else if (queryObject.SortBy.Equals("publicationYear", StringComparison.OrdinalIgnoreCase))
                 {
-                    books = queryObject.IsDescending ? books.OrderByDescending(b => b.PublicationYear) : books.OrderBy(b => b.PublicationYear);
+                    books = queryObject.Descending ? books.OrderByDescending(b => b.PublicationYear) : books.OrderBy(b => b.PublicationYear);
                 }
                 else
                 {
@@ -81,6 +81,11 @@ namespace Api.Repository
             {
                 books = books.OrderBy(b => b.Title);
             }
+            
+            int skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            int pageSize = Math.Min(queryObject.PageSize, 15);
+            books = books.Skip(skip).Take(pageSize);
+
             return await books.ToListAsync();
         }
 
