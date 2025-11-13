@@ -8,16 +8,13 @@ using System.Security.Claims;
 namespace Api.Controllers
 {
     [Route("api/categories")]
-    [ApiController]
-    public class CategoriesController : ControllerBase
+    public class CategoriesController : BaseController
     {
         private readonly ICategoryRepository _categoryRepository;
         public CategoriesController(ICategoryRepository categoryRepository)
         {
             _categoryRepository = categoryRepository;
         }
-
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
