@@ -11,6 +11,7 @@ namespace Api.Interfaces
     public interface IBookRepository
     {
         Task<List<Book>> GetAllActiveBooksAsync(QueryObject queryObject);
+        Task<(List<Book> Books, int TotalTitles, int TotalCopies)> GetActiveBooksWithCountsAsync(QueryObject queryObject);
         Task<Book?> GetActiveBookByIdAsync(int id);
         Task<Book> CreateBookAsync(Book book, List<string> authorNames, List<string> tagWords, List<string> categories);
         Task<Book?> UpdateBookAsync(int id, Book book, List<string> authorNames, List<string> tagWords, List<string> categories);

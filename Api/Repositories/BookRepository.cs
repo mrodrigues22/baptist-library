@@ -28,6 +28,8 @@ namespace Api.Repository
                 .Include(b => b.Publisher)
                 .Include(b => b.BookAuthors)
                     .ThenInclude(ba => ba.Author)
+                .Include(b => b.Loans)
+                    .ThenInclude(l => l.Status)
                 .Include(b => b.BookTags)
                     .ThenInclude(bt => bt.TagWord)
                 .AsSplitQuery()
@@ -91,6 +93,80 @@ namespace Api.Repository
             return await books.ToListAsync();
         }
 
+        public async Task<(List<Book> Books, int TotalTitles, int TotalCopies)> GetActiveBooksWithCountsAsync(QueryObject queryObject)
+        {
+            var booksQuery = _context.Books
+                .Where(b => b.IsActive)
+                .Include(b => b.Publisher)
+                .Include(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
+                .Include(b => b.Loans)
+                    .ThenInclude(l => l.Status)
+                .Include(b => b.BookTags)
+                    .ThenInclude(bt => bt.TagWord)
+                .AsSplitQuery()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(queryObject.SearchTerm))
+            {
+                var tokens = queryObject.SearchTerm.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var token in tokens)
+                {
+                    var pattern = $"%{token}%";
+                    booksQuery = booksQuery.Where(b =>
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Title), pattern) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Isbn), pattern) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Publisher.Name), pattern) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Cdd), pattern) ||
+                        b.BookAuthors.Any(ba => EF.Functions.ILike(ApplicationDbContext.Unaccent(ba.Author.FullName), pattern)) ||
+                        b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), pattern))
+                    );
+                }
+            }
+            if (queryObject.CategoryId.HasValue)
+            {
+                booksQuery = booksQuery.Where(b => b.BookCategories.Any(bc => bc.GenreId == queryObject.CategoryId.Value));
+            }
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy))
+            {
+                if (queryObject.SortBy.Equals("title", StringComparison.OrdinalIgnoreCase))
+                {
+                    booksQuery = queryObject.Descending ? booksQuery.OrderByDescending(b => b.Title) : booksQuery.OrderBy(b => b.Title);
+                }
+                else if (queryObject.SortBy.Equals("author", StringComparison.OrdinalIgnoreCase))
+                {
+                    booksQuery = queryObject.Descending ?
+                        booksQuery.OrderByDescending(b => b.BookAuthors.Min(ba => ba.Author.FullName)) :
+                        booksQuery.OrderBy(b => b.BookAuthors.Min(ba => ba.Author.FullName));
+                }
+                else if (queryObject.SortBy.Equals("publisher", StringComparison.OrdinalIgnoreCase))
+                {
+                    booksQuery = queryObject.Descending ? booksQuery.OrderByDescending(b => b.Publisher.Name) : booksQuery.OrderBy(b => b.Publisher.Name);
+                }
+                else if (queryObject.SortBy.Equals("publicationYear", StringComparison.OrdinalIgnoreCase))
+                {
+                    booksQuery = queryObject.Descending ? booksQuery.OrderByDescending(b => b.PublicationYear) : booksQuery.OrderBy(b => b.PublicationYear);
+                }
+                else
+                {
+                    booksQuery = booksQuery.OrderBy(b => b.Title);
+                }
+            }
+            else
+            {
+                booksQuery = booksQuery.OrderBy(b => b.Title);
+            }
+
+            var totalTitles = await booksQuery.CountAsync();
+            var totalCopies = await booksQuery.SumAsync(b => b.QuantityAvailable);
+
+            int skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            int pageSize = Math.Min(queryObject.PageSize, 15);
+            var paged = await booksQuery.Skip(skip).Take(pageSize).ToListAsync();
+
+            return (paged, totalTitles, totalCopies);
+        }
+
         public async Task<Book?> GetActiveBookByIdAsync(int id)
         {
             return await _context.Books
@@ -101,6 +177,8 @@ namespace Api.Repository
                     .ThenInclude(bc => bc.Category)
                 .Include(b => b.BookTags)
                     .ThenInclude(bt => bt.TagWord)
+                .Include(b => b.Loans)
+                    .ThenInclude(l => l.Status)
                 .Include(b => b.CreatedByUser)
                 .Include(b => b.ModifiedByUser)
                 .Where(b => b.Id == id && b.IsActive)

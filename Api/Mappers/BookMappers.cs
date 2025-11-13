@@ -31,6 +31,20 @@ namespace Library.Api.Mappers
             };
         }
 
+        public static BookDTO ToBookDTO(this Book book, string currentUserId)
+        {
+            var dto = book.ToBookDTO();
+            if (!string.IsNullOrEmpty(currentUserId) && book.Loans != null)
+            {
+                dto.BorrowedByCurrentUser = book.Loans.Any(l => (l.Status.Id == 1 || l.Status.Id == 2) && l.RequesterUserId == currentUserId);
+            }
+            else
+            {
+                dto.BorrowedByCurrentUser = false;
+            }
+            return dto;
+        }
+
         public static BooksDTO ToBooksDTO(this Book book)
         {
             return new BooksDTO
@@ -42,6 +56,23 @@ namespace Library.Api.Mappers
                 PublicationYear = book.PublicationYear,
                 AvailableCopies = book.QuantityAvailable - book.Loans.Count(l => l.Status.Id == 1 || l.Status.Id == 2 || l.Status.Id == 5),
                 Authors = book.BookAuthors.Select(ba => ba.Author.FullName).ToList()
+            };
+        }
+        
+        public static BooksDTO ToBooksDTO(this Book book, string currentUserId)
+        {
+            var borrowedByCurrentUser = book.Loans.Any(l => (l.Status.Id == 1 || l.Status.Id == 2) && l.RequesterUserId == currentUserId);
+            return new BooksDTO
+            {
+                Id = book.Id,
+                Title = book.Title,
+                Edition = book.Edition,
+                Publisher = book.Publisher.Name,
+                PublicationYear = book.PublicationYear,
+                AvailableCopies = book.QuantityAvailable - book.Loans.Count(l => l.Status.Id == 1 || l.Status.Id == 2 || l.Status.Id == 5),
+                Authors = book.BookAuthors.Select(ba => ba.Author.FullName).ToList(),
+                Quantity = book.QuantityAvailable,
+                BorrowedByCurrentUser = borrowedByCurrentUser
             };
         }
 
