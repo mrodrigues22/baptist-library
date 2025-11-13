@@ -23,4 +23,10 @@ public class BooksDTO
 
     [Display(Name = "Exemplares disponíveis")]
     public int AvailableCopies { get; set; }
+
+    [Display(Name = "Quantidade total de exemplares")]
+    public int Quantity { get; set; }
+
+    [Display(Name = "Já reservado pelo usuário atual")]
+    public bool BorrowedByCurrentUser { get; set; }
 }

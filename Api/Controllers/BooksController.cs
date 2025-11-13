@@ -24,9 +24,16 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBooks([FromQuery] QueryObject queryObject)
         {
-            var books = await _bookRepository.GetAllActiveBooksAsync(queryObject);
-            var booksDto = books.Select(b => b.ToBooksDTO());
-            return Ok(booksDto);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var (books, totalTitles, totalCopies) = await _bookRepository.GetActiveBooksWithCountsAsync(queryObject);
+            var items = books.Select(b => b.ToBooksDTO(userId));
+            return Ok(new {
+                items,
+                totalTitles,
+                totalCopies,
+                pageNumber = queryObject.PageNumber,
+                pageSize = queryObject.PageSize
+            });
         }
         
         [HttpGet("{id:int}")]
@@ -39,7 +46,8 @@ namespace Api.Controllers
                 return NotFound();
             }
             
-            var bookDto = book.ToBookDTO();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var bookDto = book.ToBookDTO(userId);
             return Ok(bookDto);
         }
 

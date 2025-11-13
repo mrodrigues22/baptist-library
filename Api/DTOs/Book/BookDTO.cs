@@ -60,4 +60,7 @@ public class BookDTO
     [Display(Name = "Última modificação")]
     public DateTime? ModifiedDate { get; set; }
 
+    [Display(Name = "Já reservado pelo usuário atual")]
+    public bool BorrowedByCurrentUser { get; set; }
+
 }
