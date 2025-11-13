@@ -1,14 +1,29 @@
-import { useState } from 'react';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './scenes/nvarbar';
-import { SelectedPage } from './shared/types';
+import BooksPage from './Pages/BooksPage';
+import LoansPage from './Pages/LoansPage';
+import UsersPage from './Pages/UsersPage';
+import SettingsPage from './Pages/SettingsPage';
+import MyAccountPage from './Pages/MyAccountPage';
 
 function App() {
-  const [selectedPage, setSelectedPage] = useState<SelectedPage>(SelectedPage.Acervo);
   return (
-    <div className="app">
-      <Navbar selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
-    </div>
+    <Router>
+      <div className="app">
+        <Navbar />
+        <main className="pt-24">
+          <Routes>
+            <Route path="/" element={<Navigate to="/books" replace />} />
+            <Route path="/books" element={<BooksPage />} />
+            <Route path="/loans" element={<LoansPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/my-account" element={<MyAccountPage />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 

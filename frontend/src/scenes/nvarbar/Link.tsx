@@ -1,24 +1,24 @@
 import { SelectedPage } from '../../shared/types';
 import React from 'react'
-import AnchorLink from 'react-anchor-link-smooth-scroll'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 
 interface Props {
     page: string
-    selectedPage: SelectedPage,
-    setSelectedPage: (value: SelectedPage) => void
+    to: string
 }
 
-const Link = ({ page, selectedPage, setSelectedPage }: Props) => {
-    const lowerCasePage = page.toLowerCase().replace(/ /g, "-") as SelectedPage
+const Link = ({ page, to }: Props) => {
+    const location = useLocation();
+    const isSelected = location.pathname === to;
+    
     return (
-        <AnchorLink
-            className={`${selectedPage === lowerCasePage ? "text-primary" : ""}
+        <RouterLink
+            className={`${isSelected ? "text-primary" : ""}
             transition duration-150 hover:text-lighter font-bold
             `}
-            href={`#${lowerCasePage}`}
-            onClick={() => setSelectedPage(lowerCasePage)}>
+            to={to}>
             {page}
-        </AnchorLink>
+        </RouterLink>
     )
 }
 
