@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Library.Api.DTOs.Book
 {
-    public class CreateBookDTO
+    public class CreateBookDto
     {
         [Required]
         [StringLength(255)]
@@ -27,7 +27,7 @@ namespace Library.Api.DTOs.Book
         public string PublisherName { get; set; } = string.Empty;
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Quantity available must be a positive.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Quantity available must be zero or positive.")]
         public int QuantityAvailable { get; set; }
 
         [StringLength(50)]

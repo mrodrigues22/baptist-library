@@ -5,9 +5,9 @@ namespace Library.Api.Mappers
 {
     public static class BookMappers
     {
-        public static BookDTO ToBookDTO(this Book book)
+        public static BookDetailDto ToBookDetailDto(this Book book)
         {
-            return new BookDTO
+            return new BookDetailDto
             {
                 Id = book.Id,
                 Title = book.Title,
@@ -31,9 +31,9 @@ namespace Library.Api.Mappers
             };
         }
 
-        public static BookDTO ToBookDTO(this Book book, string currentUserId)
+        public static BookDetailDto ToBookDetailDto(this Book book, string currentUserId)
         {
-            var dto = book.ToBookDTO();
+            var dto = book.ToBookDetailDto();
             if (!string.IsNullOrEmpty(currentUserId) && book.Loans != null)
             {
                 dto.BorrowedByCurrentUser = book.Loans.Any(l => (l.Status.Id == 1 || l.Status.Id == 2) && l.RequesterUserId == currentUserId);
@@ -45,9 +45,9 @@ namespace Library.Api.Mappers
             return dto;
         }
 
-        public static BooksDTO ToBooksDTO(this Book book)
+        public static BookSummaryDto ToBookSummaryDto(this Book book)
         {
-            return new BooksDTO
+            return new BookSummaryDto
             {
                 Id = book.Id,
                 Title = book.Title,
@@ -59,10 +59,10 @@ namespace Library.Api.Mappers
             };
         }
         
-        public static BooksDTO ToBooksDTO(this Book book, string currentUserId)
+        public static BookSummaryDto ToBookSummaryDto(this Book book, string currentUserId)
         {
             var borrowedByCurrentUser = book.Loans.Any(l => (l.Status.Id == 1 || l.Status.Id == 2) && l.RequesterUserId == currentUserId);
-            return new BooksDTO
+            return new BookSummaryDto
             {
                 Id = book.Id,
                 Title = book.Title,
@@ -76,34 +76,34 @@ namespace Library.Api.Mappers
             };
         }
 
-        public static Book ToBookFromCreateDTO(this CreateBookDTO createBookDTO)
+        public static Book ToBookFromCreateDto(this CreateBookDto createBookDto)
         {
             return new Book
             {
-                Title = createBookDTO.Title,
-                Edition = createBookDTO.Edition,
-                PublicationYear = createBookDTO.PublicationYear,
-                Volume = createBookDTO.Volume,
-                QuantityAvailable = createBookDTO.QuantityAvailable,
-                Isbn = createBookDTO.Isbn,
-                Cdd = createBookDTO.Cdd,
-                LibraryLocation = createBookDTO.LibraryLocation,
-                Origin = createBookDTO.Origin,
+                Title = createBookDto.Title,
+                Edition = createBookDto.Edition,
+                PublicationYear = createBookDto.PublicationYear,
+                Volume = createBookDto.Volume,
+                QuantityAvailable = createBookDto.QuantityAvailable,
+                Isbn = createBookDto.Isbn,
+                Cdd = createBookDto.Cdd,
+                LibraryLocation = createBookDto.LibraryLocation,
+                Origin = createBookDto.Origin,
                 IsActive = true
             };
         }
 
-        public static void UpdateBookFromDTO(this Book book, UpdateBookDTO updateBookDTO)
+        public static void UpdateBookFromDto(this Book book, UpdateBookDto updateBookDto)
         {
-            book.Title = updateBookDTO.Title;
-            book.Edition = updateBookDTO.Edition;
-            book.PublicationYear = updateBookDTO.PublicationYear;
-            book.Volume = updateBookDTO.Volume;
-            book.QuantityAvailable = updateBookDTO.QuantityAvailable;
-            book.Isbn = updateBookDTO.Isbn;
-            book.Cdd = updateBookDTO.Cdd;
-            book.LibraryLocation = updateBookDTO.LibraryLocation;
-            book.Origin = updateBookDTO.Origin;
+            book.Title = updateBookDto.Title;
+            book.Edition = updateBookDto.Edition;
+            book.PublicationYear = updateBookDto.PublicationYear;
+            book.Volume = updateBookDto.Volume;
+            book.QuantityAvailable = updateBookDto.QuantityAvailable;
+            book.Isbn = updateBookDto.Isbn;
+            book.Cdd = updateBookDto.Cdd;
+            book.LibraryLocation = updateBookDto.LibraryLocation;
+            book.Origin = updateBookDto.Origin;
         }
     }
 }

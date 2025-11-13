@@ -21,78 +21,90 @@ namespace Api.Controllers
             _bookRepository = bookRepository;
         }
 
+        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
         [HttpGet]
-        public async Task<IActionResult> GetBooks([FromQuery] QueryObject queryObject)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetBooks([FromQuery] QueryObject queryObject, CancellationToken cancellationToken)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            var (books, totalTitles, totalCopies) = await _bookRepository.GetActiveBooksWithCountsAsync(queryObject);
-            var items = books.Select(b => b.ToBooksDTO(userId));
+            var userId = GetUserId();
+            var result = await _bookRepository.GetPagedActiveBooksAsync(queryObject, cancellationToken);
+            var items = result.Items.Select(b => b.ToBookSummaryDto(userId));
             return Ok(new {
                 items,
-                totalTitles,
-                totalCopies,
-                pageNumber = queryObject.PageNumber,
-                pageSize = queryObject.PageSize
+                totalTitles = result.TotalTitles,
+                totalCopies = result.TotalCopies,
+                pageNumber = result.PageNumber,
+                pageSize = result.PageSize
             });
         }
         
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetBook(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetBook(int id, CancellationToken cancellationToken)
         {
-            var book = await _bookRepository.GetActiveBookByIdAsync(id);
+            var book = await _bookRepository.GetActiveBookAsync(id, cancellationToken);
             
             if (book == null)
             {
                 return NotFound();
             }
             
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            var bookDto = book.ToBookDTO(userId);
+            var userId = GetUserId();
+            var bookDto = book.ToBookDetailDto(userId);
             return Ok(bookDto);
         }
 
         // POST: api/books
         [HttpPost]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        public async Task<IActionResult> CreateBook([FromBody] CreateBookDTO bookDto)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateBook([FromBody] CreateBookDto bookDto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User must be authenticated to create a book.");
             }
 
             // Map DTO to Model and handle Publisher
-            var book = bookDto.ToBookFromCreateDTO();
+            var book = bookDto.ToBookFromCreateDto();
             
             // Process Publisher
-            var publisher = await _bookRepository.GetOrCreatePublisherAsync(bookDto.PublisherName);
+            var publisher = await _bookRepository.GetOrCreatePublisherAsync(bookDto.PublisherName, cancellationToken);
             book.PublisherId = publisher.Id;
             book.CreatedDate = DateTime.UtcNow;
             book.ModifiedDate = DateTime.UtcNow;
             book.CreatedByUserId = userId;
 
-            var createdBook = await _bookRepository.CreateBookAsync(book, bookDto.AuthorNames, bookDto.TagWords, bookDto.Categories);
+            var createdBook = await _bookRepository.CreateBookAsync(book, bookDto.AuthorNames, bookDto.TagWords, bookDto.Categories, cancellationToken);
 
-            return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook.ToBookDTO());
+            return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook.ToBookDetailDto(userId));
         }
 
         // PUT: api/books/{id}
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDTO bookDto)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDto bookDto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User must be authenticated to update a book.");
@@ -115,38 +127,42 @@ namespace Api.Controllers
             };
 
             // Process Publisher
-            var publisher = await _bookRepository.GetOrCreatePublisherAsync(bookDto.PublisherName);
+            var publisher = await _bookRepository.GetOrCreatePublisherAsync(bookDto.PublisherName, cancellationToken);
             updatedBook.PublisherId = publisher.Id;
 
-            var book = await _bookRepository.UpdateBookAsync(id, updatedBook, bookDto.AuthorNames, bookDto.TagWords, bookDto.Categories);
+            var book = await _bookRepository.UpdateBookAsync(id, updatedBook, bookDto.AuthorNames, bookDto.TagWords, bookDto.Categories, cancellationToken);
 
             if (book == null)
             {
                 return NotFound($"Book with ID {id} not found.");
             }
 
-            return Ok(new { id = book.Id, message = "Book updated successfully" });
+            return Ok(book.ToBookDetailDto(userId));
         }
 
         // DELETE: api/books/{id}
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        public async Task<IActionResult> DeleteBook(int id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> DeleteBook(int id, CancellationToken cancellationToken)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User must be authenticated to delete a book.");
             }
 
             // Check if book has active loans
-            var hasActiveLoans = await _bookRepository.BookHasActiveLoansAsync(id);
+            var hasActiveLoans = await _bookRepository.BookHasActiveLoansAsync(id, cancellationToken);
             if (hasActiveLoans)
             {
                 return BadRequest("Cannot delete book with active loans.");
             }
 
-            var deleted = await _bookRepository.DeleteBookAsync(id);
+            var deleted = await _bookRepository.DeleteBookAsync(id, cancellationToken);
 
             if (!deleted)
             {
