@@ -43,11 +43,22 @@ interface BooksApiResponse {
   pageSize?: number;
 }
 
+export interface BooksFilters {
+  searchTerm?: string;
+  categoryId?: number;
+  sortBy?: string;
+  descending?: boolean;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
 interface UseBooksResult {
   books: Book[] | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
+  setFilters: (filters: BooksFilters) => void;
+  filters: BooksFilters;
   meta: {
     totalTitles: number | null;
     totalCopies: number | null;
@@ -73,6 +84,7 @@ export function useBooks(): UseBooksResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState(0);
+  const [filters, setFiltersState] = useState<BooksFilters>({});
   const [meta, setMeta] = useState({
     totalTitles: null as number | null,
     totalCopies: null as number | null,
@@ -84,7 +96,20 @@ export function useBooks(): UseBooksResult {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE}/books`, { signal: controller.signal })
+    
+    // Build query string from filters
+    const params = new URLSearchParams();
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.categoryId) params.append('categoryId', filters.categoryId.toString());
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.descending !== undefined) params.append('descending', filters.descending.toString());
+    if (filters.pageNumber) params.append('pageNumber', filters.pageNumber.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    
+    const queryString = params.toString();
+    const url = `${API_BASE}/books${queryString ? `?${queryString}` : ''}`;
+    
+    fetch(url, { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -110,9 +135,13 @@ export function useBooks(): UseBooksResult {
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [trigger]);
+  }, [trigger, filters]);
 
   const refetch = () => setTrigger(t => t + 1);
+  
+  const setFilters = (newFilters: BooksFilters) => {
+    setFiltersState(newFilters);
+  };
 
-  return { books, loading, error, refetch, meta };
+  return { books, loading, error, refetch, setFilters, filters, meta };
 }

@@ -18,7 +18,7 @@ interface Props {
 
 const BookList = ({ books }: Props) => {
   return (
-    <div>
+    <div className="space-y-4">
       {books.map((book) => (
         <BookSummary
           key={book.id}

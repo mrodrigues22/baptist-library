@@ -1,11 +1,14 @@
 import React from 'react';
 import { useBooks } from '../hooks/useBooks';
+import { useCategories } from '../hooks/useCategories';
 import Spinner from '../components/layout/Spinner';
 import BookList from '../components/bookList/bookList';
+import BookFilters from '../components/bookFilters/BookFilters';
 
 
 const BooksPage = () => {
-  const { books, loading, error, refetch, meta } = useBooks();
+  const { books, loading, error, refetch, meta, filters, setFilters } = useBooks();
+  const { categories, loading: categoriesLoading } = useCategories();
 
   const safeBooks = books || [];
   
@@ -23,6 +26,16 @@ const BooksPage = () => {
           </span>
         )}
       </div>
+      
+      {/* Filters */}
+      {!categoriesLoading && (
+        <BookFilters 
+          filters={filters}
+          onFiltersChange={setFilters}
+          categories={categories}
+        />
+      )}
+      
       {error && <div className="text-red-600 mb-4">Erro: {error}</div>}
       
       {loading || books === null ? (
