@@ -13,15 +13,12 @@ using Microsoft.AspNetCore.Authorization;
 namespace Api.Controllers
 {
     [Route("api/books")]
-    [ApiController]
-    public class BooksController : ControllerBase
+    public class BooksController : BaseController
     {
         private readonly IBookRepository _bookRepository; 
         public BooksController(IBookRepository bookRepository) {
             _bookRepository = bookRepository;
         }
-
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]

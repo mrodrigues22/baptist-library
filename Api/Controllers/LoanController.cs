@@ -16,17 +16,14 @@ using Microsoft.Extensions.Logging;
 namespace Api.Controllers
 {
     [Route("api/loans")]
-    [ApiController]
     [Authorize]
-    public class LoansController : ControllerBase
+    public class LoansController : BaseController
     {
         private readonly ILoanRepository _loanRepository;
         public LoansController(ILoanRepository loanRepository)
         {
             _loanRepository = loanRepository;
         }
-
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
