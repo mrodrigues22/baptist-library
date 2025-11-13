@@ -79,12 +79,12 @@ namespace Api.Controllers
             return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDetailDto());
         }
 
-        [HttpPost("createloanforself")]
+        [HttpPost("borrow")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário,Membro")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CreateLoanForSelf([FromBody] CreateLoanForSelfDto loanDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> BorrowBook([FromBody] BorrowBookDto borrowDto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
@@ -97,7 +97,7 @@ namespace Api.Controllers
                 return Unauthorized();
             }
 
-            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateForSelfDto(userId), cancellationToken);
+            var loan = await _loanRepository.CreateLoanAsync(borrowDto.ToLoanFromBorrowDto(userId), cancellationToken);
             return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDetailDto());
         }
 
@@ -124,12 +124,12 @@ namespace Api.Controllers
             return Ok(loan.ToLoanDetailDto());
         }
 
-        [HttpPatch("checkback/{id:int}")]
+        [HttpPatch("return/{id:int}")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CheckBack(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> ReturnBook(int id, CancellationToken cancellationToken)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
@@ -137,7 +137,7 @@ namespace Api.Controllers
                 return Unauthorized();
             }
 
-            var loan = await _loanRepository.CheckBack(id, userId, cancellationToken);
+            var loan = await _loanRepository.ReturnBook(id, userId, cancellationToken);
             
             if (loan == null)
             {
@@ -160,7 +160,7 @@ namespace Api.Controllers
                 return Unauthorized();
             }
 
-            var result = await _loanRepository.CreateLoanForSelfWithValidationAsync(bookId, userId, cancellationToken);
+            var result = await _loanRepository.BorrowBookWithValidationAsync(bookId, userId, cancellationToken);
 
             if (!result.Success)
             {

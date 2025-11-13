@@ -54,11 +54,11 @@ namespace Library.Api.Mappers
             };
         }
 
-        public static Loan ToLoanFromCreateForSelfDto(this CreateLoanForSelfDto createLoanForSelfDto, string userId)
+        public static Loan ToLoanFromBorrowDto(this BorrowBookDto borrowBookDto, string userId)
         {
             return new Loan
             {
-                BookId = createLoanForSelfDto.BookId,
+                BookId = borrowBookDto.BookId,
                 RequesterUserId = userId,
                 CheckedOutBy = userId,
                 RequestDate = DateTime.UtcNow,

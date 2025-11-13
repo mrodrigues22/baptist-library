@@ -121,7 +121,7 @@ namespace Api.Repository
             return await GetLoanAsync(id, cancellationToken);
         }
 
-        public async Task<Loan?> CheckBack(int id, string userId, CancellationToken cancellationToken = default)
+        public async Task<Loan?> ReturnBook(int id, string userId, CancellationToken cancellationToken = default)
         {
             var loan = await _context.Loans.FindAsync(new object[] { id }, cancellationToken);
             if (loan == null || loan.StatusId != 2 && loan.StatusId != 5)
@@ -137,7 +137,7 @@ namespace Api.Repository
             return await GetLoanAsync(id, cancellationToken);
         }
 
-        public async Task<(bool Success, string? ErrorMessage, Loan? Loan)> CreateLoanForSelfWithValidationAsync(int bookId, string userId, CancellationToken cancellationToken = default)
+        public async Task<(bool Success, string? ErrorMessage, Loan? Loan)> BorrowBookWithValidationAsync(int bookId, string userId, CancellationToken cancellationToken = default)
         {
             var book = await _context.Books
                 .Include(b => b.Loans)
