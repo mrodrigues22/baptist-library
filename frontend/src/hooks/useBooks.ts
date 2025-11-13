@@ -44,7 +44,7 @@ interface BooksApiResponse {
 }
 
 interface UseBooksResult {
-  books: Book[];
+  books: Book[] | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -69,8 +69,8 @@ function normalizeItem(raw: BooksApiRawItem): Book {
 }
 
 export function useBooks(): UseBooksResult {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [books, setBooks] = useState<Book[] | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState(0);
   const [meta, setMeta] = useState({
