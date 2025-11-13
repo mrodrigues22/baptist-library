@@ -11,11 +11,11 @@ namespace Api.Interfaces
 {
     public interface ILoanRepository
     {
-        Task<List<Loan>> GetAllLoansAsync(QueryObject queryObject);
-        Task<Loan?> GetLoanByIdAsync(int id);
-        Task<Loan> CreateLoanAsync(Loan loan);
-        Task<Loan?> CheckOut(int id, string userId);
-        Task<Loan?> CheckBack(int id, string userId);
-        Task<(bool Success, string? ErrorMessage, Loan? Loan)> CreateLoanForSelfWithValidationAsync(int bookId, string userId);
+        Task<PagedResult<Loan>> GetPagedLoansAsync(QueryObject queryObject, CancellationToken cancellationToken = default);
+        Task<Loan?> GetLoanAsync(int id, CancellationToken cancellationToken = default);
+        Task<Loan> CreateLoanAsync(Loan loan, CancellationToken cancellationToken = default);
+        Task<Loan?> CheckOut(int id, string userId, CancellationToken cancellationToken = default);
+        Task<Loan?> ReturnBook(int id, string userId, CancellationToken cancellationToken = default);
+        Task<(bool Success, string? ErrorMessage, Loan? Loan)> BorrowBookWithValidationAsync(int bookId, string userId, CancellationToken cancellationToken = default);
     }
 }

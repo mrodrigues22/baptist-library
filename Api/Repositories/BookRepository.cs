@@ -21,7 +21,7 @@ namespace Api.Repository
             _context = context;
         }
 
-        public async Task<List<Book>> GetAllActiveBooksAsync(QueryObject queryObject)
+        public async Task<List<Book>> GetAllActiveBooksAsync(QueryObject queryObject, CancellationToken cancellationToken = default)
         {
             var books = _context.Books
                 .Where(b => b.IsActive)
@@ -90,10 +90,10 @@ namespace Api.Repository
             int pageSize = Math.Min(queryObject.PageSize, 15);
             books = books.Skip(skip).Take(pageSize);
 
-            return await books.ToListAsync();
+            return await books.ToListAsync(cancellationToken);
         }
 
-        public async Task<(List<Book> Books, int TotalTitles, int TotalCopies)> GetActiveBooksWithCountsAsync(QueryObject queryObject)
+        public async Task<PagedResult<Book>> GetPagedActiveBooksAsync(QueryObject queryObject, CancellationToken cancellationToken = default)
         {
             var booksQuery = _context.Books
                 .Where(b => b.IsActive)
@@ -157,17 +157,17 @@ namespace Api.Repository
                 booksQuery = booksQuery.OrderBy(b => b.Title);
             }
 
-            var totalTitles = await booksQuery.CountAsync();
-            var totalCopies = await booksQuery.SumAsync(b => b.QuantityAvailable);
+            var totalTitles = await booksQuery.CountAsync(cancellationToken);
+            var totalCopies = await booksQuery.SumAsync(b => b.QuantityAvailable, cancellationToken);
 
             int skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
             int pageSize = Math.Min(queryObject.PageSize, 15);
-            var paged = await booksQuery.Skip(skip).Take(pageSize).ToListAsync();
+            var paged = await booksQuery.Skip(skip).Take(pageSize).ToListAsync(cancellationToken);
 
-            return (paged, totalTitles, totalCopies);
+            return new PagedResult<Book>(paged, totalTitles, totalCopies, queryObject.PageNumber, pageSize);
         }
 
-        public async Task<Book?> GetActiveBookByIdAsync(int id)
+        public async Task<Book?> GetActiveBookAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Books
                 .Include(b => b.Publisher)
@@ -182,36 +182,36 @@ namespace Api.Repository
                 .Include(b => b.CreatedByUser)
                 .Include(b => b.ModifiedByUser)
                 .Where(b => b.Id == id && b.IsActive)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<Book> CreateBookAsync(Book book, List<string> authorNames, List<string> tagWords, List<string> categories)
+        public async Task<Book> CreateBookAsync(Book book, List<string> authorNames, List<string> tagWords, List<string> categories, CancellationToken cancellationToken = default)
         {
             _context.Books.Add(book);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             // Process Authors
-            await ProcessAuthorsAsync(book.Id, authorNames);
+            await ProcessAuthorsAsync(book.Id, authorNames, cancellationToken);
 
             // Process Tag Words
-            await ProcessTagWordsAsync(book.Id, tagWords);
+            await ProcessTagWordsAsync(book.Id, tagWords, cancellationToken);
 
             // Process Categories
-            await ProcessCategoriesAsync(book.Id, categories);
+            await ProcessCategoriesAsync(book.Id, categories, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return book;
         }
 
-        public async Task<Book?> UpdateBookAsync(int id, Book updatedBook, List<string> authorNames, List<string> tagWords, List<string> categories)
+        public async Task<Book?> UpdateBookAsync(int id, Book updatedBook, List<string> authorNames, List<string> tagWords, List<string> categories, CancellationToken cancellationToken = default)
         {
             // Find the existing book
             var existingBook = await _context.Books
                 .Include(b => b.BookAuthors)
                 .Include(b => b.BookTags)
                 .Include(b => b.BookCategories)
-                .FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
+                .FirstOrDefaultAsync(b => b.Id == id && b.IsActive, cancellationToken);
 
             if (existingBook == null)
             {
@@ -234,25 +234,25 @@ namespace Api.Repository
 
             // Update Authors - remove old ones and add new ones
             _context.BookAuthors.RemoveRange(existingBook.BookAuthors);
-            await ProcessAuthorsAsync(existingBook.Id, authorNames);
+            await ProcessAuthorsAsync(existingBook.Id, authorNames, cancellationToken);
 
             // Update Tag Words - remove old ones and add new ones
             _context.BookTags.RemoveRange(existingBook.BookTags);
-            await ProcessTagWordsAsync(existingBook.Id, tagWords);
+            await ProcessTagWordsAsync(existingBook.Id, tagWords, cancellationToken);
 
             // Update Categories - remove old ones and add new ones
             _context.BookCategories.RemoveRange(existingBook.BookCategories);
-            await ProcessCategoriesAsync(existingBook.Id, categories);
+            await ProcessCategoriesAsync(existingBook.Id, categories, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return existingBook;
         }
 
-        public async Task<bool> DeleteBookAsync(int id)
+        public async Task<bool> DeleteBookAsync(int id, CancellationToken cancellationToken = default)
         {
             var book = await _context.Books
-                .FirstOrDefaultAsync(b => b.Id == id);
+                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
 
             if (book == null)
             {
@@ -260,38 +260,39 @@ namespace Api.Repository
             }
 
             book.IsActive = false;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return true;
         }
 
-        public async Task<bool> BookHasActiveLoansAsync(int bookId)
+        public async Task<bool> BookHasActiveLoansAsync(int bookId, CancellationToken cancellationToken = default)
         {
             return await _context.Loans
                 .Where(l => l.BookId == bookId)
-                .AnyAsync(l => l.Status.Id == 1 || l.Status.Id == 2 || l.Status.Id == 5);
+                .AnyAsync(l => l.Status.Id == 1 || l.Status.Id == 2 || l.Status.Id == 5, cancellationToken);
         }
 
-        public async Task<Publisher> GetOrCreatePublisherAsync(string publisherName)
+        public async Task<Publisher> GetOrCreatePublisherAsync(string publisherName, CancellationToken cancellationToken = default)
         {
+            var normalizedName = publisherName.Trim();
             var publisher = await _context.Publishers
-                .FirstOrDefaultAsync(p => p.Name.ToLower() == publisherName.ToLower());
+                .FirstOrDefaultAsync(p => p.Name.ToLower() == normalizedName.ToLower(), cancellationToken);
             
             if (publisher == null)
             {
                 publisher = new Publisher 
                 { 
-                    Name = publisherName, 
+                    Name = normalizedName, 
                     IsActive = true 
                 };
                 _context.Publishers.Add(publisher);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             return publisher;
         }
 
-        private async Task ProcessAuthorsAsync(int bookId, List<string> authorNames)
+        private async Task ProcessAuthorsAsync(int bookId, List<string> authorNames, CancellationToken cancellationToken = default)
         {
             var names = authorNames
                 .Where(n => !string.IsNullOrWhiteSpace(n))
@@ -302,7 +303,7 @@ namespace Api.Repository
             foreach (var authorName in names)
             {
                 var author = await _context.Authors
-                    .FirstOrDefaultAsync(a => a.FullName.ToLower() == authorName.ToLower());
+                    .FirstOrDefaultAsync(a => a.FullName.ToLower() == authorName.ToLower(), cancellationToken);
                 if (author == null)
                 {
                     author = new Author
@@ -311,13 +312,13 @@ namespace Api.Repository
                         IsActive = true
                     };
                     _context.Authors.Add(author);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 _context.BookAuthors.Add(new BookAuthor { BookId = bookId, AuthorId = author.Id });
             }
         }
 
-        private async Task ProcessTagWordsAsync(int bookId, List<string> tagWords)
+        private async Task ProcessTagWordsAsync(int bookId, List<string> tagWords, CancellationToken cancellationToken = default)
         {
             var words = tagWords
                 .Where(t => !string.IsNullOrWhiteSpace(t))
@@ -328,7 +329,7 @@ namespace Api.Repository
             foreach (var tagWord in words)
             {
                 var tag = await _context.TagWords
-                    .FirstOrDefaultAsync(t => t.Word.ToLower() == tagWord.ToLower());
+                    .FirstOrDefaultAsync(t => t.Word.ToLower() == tagWord.ToLower(), cancellationToken);
                 if (tag == null)
                 {
                     tag = new TagWord
@@ -337,13 +338,13 @@ namespace Api.Repository
                         IsActive = true
                     };
                     _context.TagWords.Add(tag);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 _context.BookTags.Add(new BookTag { BookId = bookId, TagWordId = tag.Id });
             }
         }
 
-        private async Task ProcessCategoriesAsync(int bookId, List<string> categoryNames)
+        private async Task ProcessCategoriesAsync(int bookId, List<string> categoryNames, CancellationToken cancellationToken = default)
         {
             var names = categoryNames
                 .Where(g => !string.IsNullOrWhiteSpace(g))
@@ -354,7 +355,7 @@ namespace Api.Repository
             foreach (var categoryName in names)
             {
                 var category = await _context.Categories
-                    .FirstOrDefaultAsync(g => g.Description.ToLower() == categoryName.ToLower());
+                    .FirstOrDefaultAsync(g => g.Description.ToLower() == categoryName.ToLower(), cancellationToken);
                 if (category == null)
                 {
                     category = new Category
@@ -363,7 +364,7 @@ namespace Api.Repository
                         IsActive = true
                     };
                     _context.Categories.Add(category);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 _context.BookCategories.Add(new BookCategory { BookId = bookId, GenreId = category.Id });
             }

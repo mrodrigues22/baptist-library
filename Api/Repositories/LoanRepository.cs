@@ -20,7 +20,7 @@ namespace Api.Repository
         {
             _context = context;
         }
-        public async Task<List<Loan>> GetAllLoansAsync(QueryObject queryObject)
+        public async Task<PagedResult<Loan>> GetPagedLoansAsync(QueryObject queryObject, CancellationToken cancellationToken = default)
         {
             var loans = _context.Loans
                 .Include(l => l.Book)
@@ -77,14 +77,16 @@ namespace Api.Repository
                 loans = loans.OrderByDescending(l => l.RequestDate);
             }
 
+            var totalCount = await loans.CountAsync(cancellationToken);
+
             int skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
             int pageSize = Math.Min(queryObject.PageSize, 15);
-            loans = loans.Skip(skip).Take(pageSize);
+            var paged = await loans.Skip(skip).Take(pageSize).ToListAsync(cancellationToken);
 
-            return await loans.ToListAsync();
+            return new PagedResult<Loan>(paged, totalCount, queryObject.PageNumber, pageSize);
         }
 
-        public async Task<Loan?> GetLoanByIdAsync(int id)
+        public async Task<Loan?> GetLoanAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Loans
                 .Include(l => l.Book)
@@ -92,22 +94,20 @@ namespace Api.Repository
                 .Include(l => l.Status)
                 .Include(l => l.CheckedOutByUser)
                 .Include(l => l.ReceivedByUser)
-                .FirstOrDefaultAsync(l => l.Id == id);
+                .FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
         }
 
-        public async Task<Loan> CreateLoanAsync(Loan loan)
+        public async Task<Loan> CreateLoanAsync(Loan loan, CancellationToken cancellationToken = default)
         {
-            
+            await _context.Loans.AddAsync(loan, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            await _context.Loans.AddAsync(loan);
-            await _context.SaveChangesAsync();
-
-            return await GetLoanByIdAsync(loan.Id) ?? loan;
+            return await GetLoanAsync(loan.Id, cancellationToken) ?? loan;
         }
 
-        public async Task<Loan?> CheckOut(int id, string userId)
+        public async Task<Loan?> CheckOut(int id, string userId, CancellationToken cancellationToken = default)
         {
-            var loan = await _context.Loans.FindAsync(id);
+            var loan = await _context.Loans.FindAsync(new object[] { id }, cancellationToken);
             if (loan == null || loan.StatusId != 1)
             {
                 return null;
@@ -116,14 +116,14 @@ namespace Api.Repository
             loan.StatusId = 2;
             loan.CheckoutDate = DateTime.UtcNow;
             loan.CheckedOutBy = userId;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
-            return await GetLoanByIdAsync(id);
+            return await GetLoanAsync(id, cancellationToken);
         }
 
-        public async Task<Loan?> CheckBack(int id, string userId)
+        public async Task<Loan?> ReturnBook(int id, string userId, CancellationToken cancellationToken = default)
         {
-            var loan = await _context.Loans.FindAsync(id);
+            var loan = await _context.Loans.FindAsync(new object[] { id }, cancellationToken);
             if (loan == null || loan.StatusId != 2 && loan.StatusId != 5)
             {
                 return null;
@@ -132,16 +132,16 @@ namespace Api.Repository
             loan.StatusId = 3;
             loan.ReturnDate = DateTime.UtcNow;
             loan.ReceivedBy = userId;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
-            return await GetLoanByIdAsync(id);
+            return await GetLoanAsync(id, cancellationToken);
         }
 
-        public async Task<(bool Success, string? ErrorMessage, Loan? Loan)> CreateLoanForSelfWithValidationAsync(int bookId, string userId)
+        public async Task<(bool Success, string? ErrorMessage, Loan? Loan)> BorrowBookWithValidationAsync(int bookId, string userId, CancellationToken cancellationToken = default)
         {
             var book = await _context.Books
                 .Include(b => b.Loans)
-                .FirstOrDefaultAsync(b => b.Id == bookId);
+                .FirstOrDefaultAsync(b => b.Id == bookId, cancellationToken);
 
             if (book == null)
             {
@@ -159,7 +159,7 @@ namespace Api.Repository
             var existingLoan = await _context.Loans
                 .FirstOrDefaultAsync(l => l.BookId == bookId &&
                                      l.RequesterUserId == userId &&
-                                     l.ReturnDate == null);
+                                     l.ReturnDate == null, cancellationToken);
 
             if (existingLoan != null)
             {
@@ -169,12 +169,12 @@ namespace Api.Repository
             // Check if user has reached loan limit
             var userActiveLoansCount = await _context.Loans
                 .CountAsync(l => l.RequesterUserId == userId && 
-                            (l.StatusId == 1 || l.StatusId == 2 || l.StatusId == 5));
+                            (l.StatusId == 1 || l.StatusId == 2 || l.StatusId == 5), cancellationToken);
 
             var loanLimit = await _context.Settings
                 .Where(s => s.Id == 1)
                 .Select(s => s.Value)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (userActiveLoansCount >= loanLimit)
             {
@@ -190,10 +190,10 @@ namespace Api.Repository
                 RequestDate = DateTime.UtcNow
             };
 
-            await _context.Loans.AddAsync(loan);
-            await _context.SaveChangesAsync();
+            await _context.Loans.AddAsync(loan, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            var createdLoan = await GetLoanByIdAsync(loan.Id);
+            var createdLoan = await GetLoanAsync(loan.Id, cancellationToken);
             return (true, null, createdLoan);
         }
     }
