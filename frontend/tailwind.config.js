@@ -1,17 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [],
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
       colors: {
         primary: '#012646',
+        lighter: '#023E8A',
         secondary: '#EEEEEE',
       },
       backgroundImage: (theme) => ({
         "bible": "url('/assets/images/bible.jpg')",
       }),
       fontFamily: {
-        bioRhyme: ['Bio Rhyme', 'sans-serif'],
+        bioRhyme: ['BioRhyme', 'serif'],
         montserrat: ['Montserrat', 'sans-serif'],
       },
     },

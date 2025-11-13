@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import './App.css';
-import Header from './components/header/Header';
+import Navbar from './scenes/nvarbar';
+import { SelectedPage } from './shared/types';
 
 function App() {
+  const [selectedPage, setSelectedPage] = useState<SelectedPage>(SelectedPage.Acervo);
   return (
-    <div className="App">
-      <Header />
+    <div className="app">
+      <Navbar selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
     </div>
   );
 }

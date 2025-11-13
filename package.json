@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "react-anchor-link-smooth-scroll": "^1.0.12"
+  }
+}
