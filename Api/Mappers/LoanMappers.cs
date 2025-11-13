@@ -6,9 +6,9 @@ namespace Library.Api.Mappers
 {
     public static class LoanMappers
     {
-        public static LoansDTO ToLoansDTO(this Loan loan)
+        public static LoanSummaryDto ToLoanSummaryDto(this Loan loan)
         {
-            return new LoansDTO
+            return new LoanSummaryDto
             {
                 Id = loan.Id,
                 Book = loan.Book.Title,
@@ -18,9 +18,9 @@ namespace Library.Api.Mappers
             };
         }
 
-        public static LoanDTO ToLoanDTO(this Loan loan)
+        public static LoanDetailDto ToLoanDetailDto(this Loan loan)
         {
-            return new LoanDTO
+            return new LoanDetailDto
             {
                 Id = loan.Id,
                 BookId = loan.BookId,
@@ -42,23 +42,23 @@ namespace Library.Api.Mappers
             };
         }
 
-        public static Loan ToLoanFromCreateDTO(this CreateLoanDTO createLoanDTO, string checkedOutByUserId)
+        public static Loan ToLoanFromCreateDto(this CreateLoanDto createLoanDto, string checkedOutByUserId)
         {
             return new Loan
             {
-                BookId = createLoanDTO.BookId,
-                RequesterUserId = createLoanDTO.RequesterUserId,
+                BookId = createLoanDto.BookId,
+                RequesterUserId = createLoanDto.RequesterUserId,
                 CheckedOutBy = checkedOutByUserId,
                 RequestDate = DateTime.UtcNow,
                 StatusId = 2
             };
         }
 
-        public static Loan ToLoanFromCreateForSelfDTO(this CreateLoanForSelfDTO createLoanForSelfDTO, string userId)
+        public static Loan ToLoanFromCreateForSelfDto(this CreateLoanForSelfDto createLoanForSelfDto, string userId)
         {
             return new Loan
             {
-                BookId = createLoanForSelfDTO.BookId,
+                BookId = createLoanForSelfDto.BookId,
                 RequesterUserId = userId,
                 CheckedOutBy = userId,
                 RequestDate = DateTime.UtcNow,

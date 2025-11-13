@@ -26,125 +26,148 @@ namespace Api.Controllers
             _loanRepository = loanRepository;
         }
 
+        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
         [HttpGet]
-        public async Task<IActionResult> GetLoans([FromQuery] QueryObject queryObject)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLoans([FromQuery] QueryObject queryObject, CancellationToken cancellationToken)
         {
-            var loans = await _loanRepository.GetAllLoansAsync(queryObject);
-            var loansDto = loans.Select(l => l.ToLoansDTO());
-            return Ok(loansDto);
+            var result = await _loanRepository.GetPagedLoansAsync(queryObject, cancellationToken);
+            var items = result.Items.Select(l => l.ToLoanSummaryDto());
+            return Ok(new {
+                items,
+                totalCount = result.TotalCount,
+                pageNumber = result.PageNumber,
+                pageSize = result.PageSize
+            });
         }
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetLoanById(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetLoanById(int id, CancellationToken cancellationToken)
         {
-            var loan = await _loanRepository.GetLoanByIdAsync(id);
+            var loan = await _loanRepository.GetLoanAsync(id, cancellationToken);
             
             if (loan == null)
             {
                 return NotFound();
             }
 
-            return Ok(loan.ToLoanDTO());
+            return Ok(loan.ToLoanDetailDto());
         }
 
         [HttpPost]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        public async Task<IActionResult> CreateLoan([FromBody] CreateLoanDTO loanDto)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateLoan([FromBody] CreateLoanDto loanDto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateDTO(userId));
-            return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
+            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateDto(userId), cancellationToken);
+            return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDetailDto());
         }
 
         [HttpPost("createloanforself")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário,Membro")]
-        public async Task<IActionResult> CreateLoanForSelf([FromBody] CreateLoanForSelfDTO loanDto)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateLoanForSelf([FromBody] CreateLoanForSelfDto loanDto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateForSelfDTO(userId));
-            return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDTO());
+            var loan = await _loanRepository.CreateLoanAsync(loanDto.ToLoanFromCreateForSelfDto(userId), cancellationToken);
+            return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan.ToLoanDetailDto());
         }
 
         [HttpPatch("checkout/{id:int}")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        public async Task<IActionResult> CheckOut(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CheckOut(int id, CancellationToken cancellationToken)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var loan = await _loanRepository.CheckOut(id, userId);
+            var loan = await _loanRepository.CheckOut(id, userId, cancellationToken);
             
             if (loan == null)
             {
                 return NotFound();
             }
 
-            return Ok(loan.ToLoanDTO());
+            return Ok(loan.ToLoanDetailDto());
         }
 
         [HttpPatch("checkback/{id:int}")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        public async Task<IActionResult> CheckBack(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CheckBack(int id, CancellationToken cancellationToken)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var loan = await _loanRepository.CheckBack(id, userId);
+            var loan = await _loanRepository.CheckBack(id, userId, cancellationToken);
             
             if (loan == null)
             {
                 return NotFound();
             }
 
-            return Ok(loan.ToLoanDTO());
+            return Ok(loan.ToLoanDetailDto());
         }
 
         [HttpPost("request/{bookId:int}")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário,Membro")]
-        public async Task<IActionResult> RequestLoan(int bookId)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> RequestLoan(int bookId, CancellationToken cancellationToken)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var result = await _loanRepository.CreateLoanForSelfWithValidationAsync(bookId, userId);
+            var result = await _loanRepository.CreateLoanForSelfWithValidationAsync(bookId, userId, cancellationToken);
 
             if (!result.Success)
             {
                 return BadRequest(new { message = result.ErrorMessage });
             }
 
-            return CreatedAtAction(nameof(GetLoanById), new { id = result.Loan!.Id }, result.Loan.ToLoanDTO());
+            return CreatedAtAction(nameof(GetLoanById), new { id = result.Loan!.Id }, result.Loan.ToLoanDetailDto());
         }
-    
-
     }
 }
