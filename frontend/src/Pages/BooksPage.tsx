@@ -54,7 +54,7 @@ const BooksPage = () => {
             authors: b.authors && b.authors.length ? b.authors : ['Autor desconhecido'],
             publisher: b.publisher,
             edition: b.edition || 1,
-            quantity: b.quantity,
+            publicationYear: b.publicationYear,
             copiesAvailable: b.availableCopies,
             borrowedByUser: b.borrowedByCurrentUser
           }))}

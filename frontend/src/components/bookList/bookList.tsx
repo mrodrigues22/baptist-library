@@ -7,7 +7,7 @@ interface Book {
   authors: string[],
   publisher: string,
   edition: number,
-  quantity?: number,
+  publicationYear?: number,
   copiesAvailable?: number,
   borrowedByUser?: boolean
 }
@@ -27,7 +27,7 @@ const BookList = ({ books }: Props) => {
           authors={book.authors}
           publisher={book.publisher}
           edition={book.edition}
-          quantity={book.quantity}
+          publicationYear={book.publicationYear}
           copiesAvailable={book.copiesAvailable}
           borrowedByUser={book.borrowedByUser}
         />

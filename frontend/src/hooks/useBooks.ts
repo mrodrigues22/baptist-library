@@ -73,6 +73,8 @@ function normalizeItem(raw: BooksApiRawItem): Book {
     title: raw.title ?? raw.Title ?? '',
     authors: raw.authors ?? raw.Authors ?? [],
     publisher: raw.publisher ?? raw.Publisher ?? '',
+    publicationYear: raw.publicationYear ?? raw.PublicationYear,
+    edition: raw.edition ?? raw.Edition,
     availableCopies: raw.availableCopies ?? raw.AvailableCopies ?? 0,
     quantity: raw.quantity ?? raw.Quantity ?? 0,
     borrowedByCurrentUser: raw.borrowedByCurrentUser ?? raw.BorrowedByCurrentUser ?? false
