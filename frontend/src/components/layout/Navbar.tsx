@@ -14,7 +14,7 @@ const Navbar = () => {
                 <div className={`${flexBetween} mx-auto w-5/6`}>
                     {/* LEFT SIDE */}
                     <div className={`${flexBetween} w-full`}>
-                        <h1 className="text-xl font-bold"></h1>
+                        <h1 className="text-xl font-bold">Biblioteca PIB</h1>
                     </div>
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (

@@ -12,7 +12,7 @@ function App() {
     <Router>
       <div className="app">
         <Navbar />
-        <main className="pt-24">
+        <main className="pt-20 pb-20 mx-auto w-5/6">
           <Routes>
             <Route path="/" element={<Navigate to="/books" replace />} />
             <Route path="/books" element={<BooksPage />} />

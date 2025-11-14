@@ -1,6 +1,7 @@
 import React from 'react';
 import { BooksFilters } from '../../hooks/useBooks';
 import { Category } from '../../hooks/useCategories';
+import SearchableSelect from '../SearchableSelect/SearchableSelect';
 
 interface BookFiltersProps {
   filters: BooksFilters;
@@ -13,11 +14,10 @@ const BookFilters: React.FC<BookFiltersProps> = ({ filters, onFiltersChange, cat
     onFiltersChange({ ...filters, searchTerm: e.target.value });
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
+  const handleCategoryChange = (value: string | number) => {
     onFiltersChange({ 
       ...filters, 
-      categoryId: value ? parseInt(value) : undefined 
+      categoryId: value === '' ? undefined : Number(value)
     });
   };
 
@@ -65,19 +65,20 @@ const BookFilters: React.FC<BookFiltersProps> = ({ filters, onFiltersChange, cat
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
             Categoria
           </label>
-          <select
+          <SearchableSelect
             id="category"
             value={filters.categoryId || ''}
             onChange={handleCategoryChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todas as categorias</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>
-                {cat.description}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: 'Todas as categorias' },
+              ...categories.map(cat => ({
+                value: cat.id,
+                label: cat.description || cat.name
+              }))
+            ]}
+            placeholder="Todas as categorias"
+            className="w-full"
+          />
         </div>
 
         {/* Sort */}
