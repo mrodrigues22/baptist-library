@@ -1,5 +1,6 @@
 import React from 'react';
 import { UsersFilters } from '../../hooks/User/useUsers';
+import Select from '../Select/Select';
 
 interface UserFiltersProps {
   filters: UsersFilters;
@@ -11,20 +12,20 @@ const UserFilters: React.FC<UserFiltersProps> = ({ filters, onFiltersChange }) =
     onFiltersChange({ ...filters, filter: e.target.value });
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === '') {
+  const handleSortChange = (value: string | number) => {
+    const stringValue = String(value);
+    if (stringValue === '') {
       onFiltersChange({ ...filters, sortBy: undefined, descending: false });
-    } else if (value.startsWith('-')) {
-      onFiltersChange({ ...filters, sortBy: value.substring(1), descending: true });
+    } else if (stringValue.startsWith('-')) {
+      onFiltersChange({ ...filters, sortBy: stringValue.substring(1), descending: true });
     } else {
-      onFiltersChange({ ...filters, sortBy: value, descending: false });
+      onFiltersChange({ ...filters, sortBy: stringValue, descending: false });
     }
   };
 
-  const handleRoleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    onFiltersChange({ ...filters, roleFilter: value === 'all' ? undefined : value });
+  const handleRoleFilterChange = (value: string | number) => {
+    const stringValue = String(value);
+    onFiltersChange({ ...filters, roleFilter: stringValue === 'all' ? undefined : stringValue });
   };
 
   const handleClearFilters = () => {
@@ -62,17 +63,19 @@ const UserFilters: React.FC<UserFiltersProps> = ({ filters, onFiltersChange }) =
           <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 mb-1">
             Função
           </label>
-          <select
+          <Select
             id="roleFilter"
             value={currentRoleFilter}
             onChange={handleRoleFilterChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">Todas</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Bibliotecário">Bibliotecário</option>
-            <option value="Membro">Membro</option>
-          </select>
+            options={[
+              { value: 'all', label: 'Todas' },
+              { value: 'Administrador', label: 'Administrador' },
+              { value: 'Bibliotecário', label: 'Bibliotecário' },
+              { value: 'Membro', label: 'Membro' }
+            ]}
+            placeholder="Todas"
+            className="w-full"
+          />
         </div>
 
         {/* Sort */}
@@ -80,20 +83,22 @@ const UserFilters: React.FC<UserFiltersProps> = ({ filters, onFiltersChange }) =
           <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
             Ordenar por
           </label>
-          <select
+          <Select
             id="sort"
             value={currentSortValue}
             onChange={handleSortChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Padrão</option>
-            <option value="firstName">Nome (A-Z)</option>
-            <option value="-firstName">Nome (Z-A)</option>
-            <option value="email">Email (A-Z)</option>
-            <option value="-email">Email (Z-A)</option>
-            <option value="role">Função (A-Z)</option>
-            <option value="-role">Função (Z-A)</option>
-          </select>
+            options={[
+              { value: '', label: 'Padrão' },
+              { value: 'firstName', label: 'Nome (A-Z)' },
+              { value: '-firstName', label: 'Nome (Z-A)' },
+              { value: 'email', label: 'Email (A-Z)' },
+              { value: '-email', label: 'Email (Z-A)' },
+              { value: 'role', label: 'Função (A-Z)' },
+              { value: '-role', label: 'Função (Z-A)' }
+            ]}
+            placeholder="Padrão"
+            className="w-full"
+          />
         </div>
       </div>
 

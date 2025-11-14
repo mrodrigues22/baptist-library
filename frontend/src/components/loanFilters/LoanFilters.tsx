@@ -1,5 +1,6 @@
 import React from 'react';
 import { LoansFilters } from '../../hooks/Loan/useLoans';
+import Select from '../Select/Select';
 
 interface LoanFiltersProps {
   filters: LoansFilters;
@@ -11,22 +12,22 @@ const LoanFilters: React.FC<LoanFiltersProps> = ({ filters, onFiltersChange }) =
     onFiltersChange({ ...filters, searchTerm: e.target.value });
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
+  const handleStatusChange = (value: string | number) => {
+    const stringValue = String(value);
     onFiltersChange({ 
       ...filters, 
-      status: value === '' ? undefined : parseInt(value)
+      status: stringValue === '' ? undefined : parseInt(stringValue)
     });
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === '') {
+  const handleSortChange = (value: string | number) => {
+    const stringValue = String(value);
+    if (stringValue === '') {
       onFiltersChange({ ...filters, sortBy: undefined, descending: false });
-    } else if (value.startsWith('-')) {
-      onFiltersChange({ ...filters, sortBy: value.substring(1), descending: true });
+    } else if (stringValue.startsWith('-')) {
+      onFiltersChange({ ...filters, sortBy: stringValue.substring(1), descending: true });
     } else {
-      onFiltersChange({ ...filters, sortBy: value, descending: false });
+      onFiltersChange({ ...filters, sortBy: stringValue, descending: false });
     }
   };
 
@@ -63,19 +64,21 @@ const LoanFilters: React.FC<LoanFiltersProps> = ({ filters, onFiltersChange }) =
           <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
             Status
           </label>
-          <select
+          <Select
             id="status"
             value={filters.status !== undefined ? filters.status : ''}
             onChange={handleStatusChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todos</option>
-            <option value="1">Aguardando retirada</option>
-            <option value="2">Aguardando devolução</option>
-            <option value="3">Devolvido</option>
-            <option value="4">Cancelado</option>
-            <option value="5">Atrasado</option>
-          </select>
+            options={[
+              { value: '', label: 'Todos' },
+              { value: '1', label: 'Aguardando retirada' },
+              { value: '2', label: 'Aguardando devolução' },
+              { value: '3', label: 'Devolvido' },
+              { value: '4', label: 'Cancelado' },
+              { value: '5', label: 'Atrasado' }
+            ]}
+            placeholder="Todos"
+            className="w-full"
+          />
         </div>
 
         {/* Sort */}
@@ -83,20 +86,22 @@ const LoanFilters: React.FC<LoanFiltersProps> = ({ filters, onFiltersChange }) =
           <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
             Ordenar por
           </label>
-          <select
+          <Select
             id="sort"
             value={currentSortValue}
             onChange={handleSortChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Padrão</option>
-            <option value="requestDate">Data solicitação (mais antigo)</option>
-            <option value="-requestDate">Data solicitação (mais recente)</option>
-            <option value="bookTitle">Livro (A-Z)</option>
-            <option value="-bookTitle">Livro (Z-A)</option>
-            <option value="requester">Usuário (A-Z)</option>
-            <option value="-requester">Usuário (Z-A)</option>
-          </select>
+            options={[
+              { value: '', label: 'Padrão' },
+              { value: 'requestDate', label: 'Data solicitação (mais antigo)' },
+              { value: '-requestDate', label: 'Data solicitação (mais recente)' },
+              { value: 'bookTitle', label: 'Livro (A-Z)' },
+              { value: '-bookTitle', label: 'Livro (Z-A)' },
+              { value: 'requester', label: 'Usuário (A-Z)' },
+              { value: '-requester', label: 'Usuário (Z-A)' }
+            ]}
+            placeholder="Padrão"
+            className="w-full"
+          />
         </div>
       </div>
 

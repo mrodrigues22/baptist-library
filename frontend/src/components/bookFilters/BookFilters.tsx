@@ -2,6 +2,7 @@ import React from 'react';
 import { BooksFilters } from '../../hooks/Book/useBooks';
 import { Category } from '../../hooks/Category/useCategories';
 import SearchableSelect from '../SearchableSelect/SearchableSelect';
+import Select from '../Select/Select';
 
 interface BookFiltersProps {
   filters: BooksFilters;
@@ -21,14 +22,14 @@ const BookFilters: React.FC<BookFiltersProps> = ({ filters, onFiltersChange, cat
     });
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === '') {
+  const handleSortChange = (value: string | number) => {
+    const stringValue = String(value);
+    if (stringValue === '') {
       onFiltersChange({ ...filters, sortBy: undefined, descending: false });
-    } else if (value.startsWith('-')) {
-      onFiltersChange({ ...filters, sortBy: value.substring(1), descending: true });
+    } else if (stringValue.startsWith('-')) {
+      onFiltersChange({ ...filters, sortBy: stringValue.substring(1), descending: true });
     } else {
-      onFiltersChange({ ...filters, sortBy: value, descending: false });
+      onFiltersChange({ ...filters, sortBy: stringValue, descending: false });
     }
   };
 
@@ -86,18 +87,20 @@ const BookFilters: React.FC<BookFiltersProps> = ({ filters, onFiltersChange, cat
           <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
             Ordenar por
           </label>
-          <select
+          <Select
             id="sort"
             value={currentSortValue}
             onChange={handleSortChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Padrão</option>
-            <option value="title">Título (A-Z)</option>
-            <option value="-title">Título (Z-A)</option>
-            <option value="publicationYear">Ano (mais antigo)</option>
-            <option value="-publicationYear">Ano (mais recente)</option>
-          </select>
+            options={[
+              { value: '', label: 'Padrão' },
+              { value: 'title', label: 'Título (A-Z)' },
+              { value: '-title', label: 'Título (Z-A)' },
+              { value: 'publicationYear', label: 'Ano (mais antigo)' },
+              { value: '-publicationYear', label: 'Ano (mais recente)' }
+            ]}
+            placeholder="Padrão"
+            className="w-full"
+          />
         </div>
       </div>
 
