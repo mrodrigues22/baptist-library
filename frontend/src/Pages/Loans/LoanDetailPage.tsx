@@ -38,7 +38,8 @@ const LoanDetailPage = () => {
     }
   };
 
-  if (loading) {
+  // Treat initial "loan === null" state as pending until we either get data or an error
+  if (loading || (!loan && !error)) {
     return (
       <div className="flex justify-center items-center py-20">
         <Spinner size={60} />
@@ -62,6 +63,7 @@ const LoanDetailPage = () => {
     );
   }
 
+  // If we reach here and loan is still null (and not loading/error), it's truly not found
   if (!loan) {
     return (
       <div className="pt-20 px-6">
