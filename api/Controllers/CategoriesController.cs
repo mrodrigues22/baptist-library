@@ -41,8 +41,6 @@ namespace Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto dto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
@@ -68,8 +66,6 @@ namespace Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDto dto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {

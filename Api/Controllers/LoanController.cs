@@ -61,11 +61,6 @@ namespace Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> CreateLoan([FromBody] CreateLoanDto loanDto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
@@ -83,11 +78,6 @@ namespace Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> BorrowBook([FromBody] BorrowBookDto borrowDto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
@@ -165,6 +155,15 @@ namespace Api.Controllers
             }
 
             return CreatedAtAction(nameof(GetLoanById), new { id = result.Loan!.Id }, result.Loan.ToLoanDetailDto());
+        }
+
+        [HttpGet("book/{bookId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLoansByBookId(int bookId, CancellationToken cancellationToken)
+        {
+            var loans = await _loanRepository.GetLoansByBookIdAsync(bookId, cancellationToken);
+            var loanSummaries = loans.Select(l => l.ToBookLoanSummaryDto());
+            return Ok(loanSummaries);
         }
     }
 }

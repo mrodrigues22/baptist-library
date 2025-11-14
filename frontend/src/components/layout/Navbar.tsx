@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import Link from './Link';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
     const flexBetween = "flex items-center justify-between";
     const [isMenuToggled, setIsMenuToggled] = useState<boolean>(false);
     const isAboveMediumScreens = useMediaQuery("(min-width: 1060px)");
+    const navigate = useNavigate();
+    const { isLoggedIn, hasRole, logout } = useAuth();
+    const canAccessUsers = hasRole(['Administrador', 'Desenvolvedor', 'Bibliotecário']);
+    const canAccessSettings = hasRole(['Administrador', 'Desenvolvedor']);
 
     return (
         <nav>
@@ -14,21 +20,34 @@ const Navbar = () => {
                 <div className={`${flexBetween} mx-auto w-5/6`}>
                     {/* LEFT SIDE */}
                     <div className={`${flexBetween} w-full`}>
-                        <h1 className="text-xl font-bold"></h1>
+                        <img src="/logo-min.svg" className="h-15" alt="Logo" />
                     </div>
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (
                         <>
-                            <div className={`${flexBetween} w-full gap-8 text-sm`}>
+                            <div className={`flex items-center justify-end mr-10 w-full gap-8 text-sm`}>
                                 <Link page="Acervo" to="/books" />
-                                <Link page="Empréstimos" to="/loans" />
-                                <Link page="Usuários" to="/users" />
-                                <Link page="Configurações" to="/settings" />
-                                <Link page="Minha conta" to="/my-account" />
+                                {isLoggedIn && <Link page="Empréstimos" to="/loans" />}
+                                {canAccessUsers && <Link page="Usuários" to="/users" />}
+                                {canAccessSettings && <Link page="Configurações" to="/settings" />}
+                                {isLoggedIn && <Link page="Minha conta" to="/my-account" />}
                             </div>
                             <div className={`${flexBetween} gap-8`}>
-                                <p className="cursor-pointer hover:text-gray-600">Login</p>
-                                <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sair</button>
+                                {!isLoggedIn ? (
+                                    <button 
+                                        onClick={() => navigate('/login')} 
+                                        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors duration-300"
+                                    >
+                                        Login
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={logout} 
+                                        className="px-4 py-2 border border-secondary text-secondary rounded hover:bg-secondary hover:text-white transition-colors duration-300"
+                                    >
+                                        Sair
+                                    </button>
+                                )}
                             </div>
                         </>
                     ) : (
@@ -50,18 +69,31 @@ const Navbar = () => {
                     </div>
 
                     {/* MENU ITEMS */}
-                    <div className="ml-[33%] flex flex-col gap-10 text-2xl">
+                    <div className="ml-[33%] flex flex-col gap-1 text-2xl">
                         <Link page="Acervo" to="/books" />
-                        <Link page="Empréstimos" to="/loans" />
-                        <Link page="Usuários" to="/users" />
-                        <Link page="Configurações" to="/settings" />
-                        <Link page="Minha conta" to="/my-account" />
+                        {isLoggedIn && <Link page="Empréstimos" to="/loans" />}
+                        {canAccessUsers && <Link page="Usuários" to="/users" />}
+                        {canAccessSettings && <Link page="Configurações" to="/settings" />}
+                        {isLoggedIn && <Link page="Minha conta" to="/my-account" />}
                     </div>
 
                     {/* LOGIN/LOGOUT */}
                     <div className="ml-[33%] mt-10 flex flex-col gap-4">
-                        <p className="cursor-pointer hover:text-gray-600">Login</p>
-                        <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-fit">Sair</button>
+                        {!isLoggedIn ? (
+                            <button 
+                                onClick={() => navigate('/login')} 
+                                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary w-fit transition-colors duration-300"
+                            >
+                                Login
+                            </button>
+                        ) : (
+                            <button 
+                                onClick={logout} 
+                                className="px-4 py-2 border border-secondary text-secondary rounded w-fit transition-colors duration-300 hover:bg-secondary hover:text-white"
+                            >
+                                Sair
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

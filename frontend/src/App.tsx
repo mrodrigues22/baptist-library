@@ -1,29 +1,126 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/layout/Navbar';
-import BooksPage from './Pages/BooksPage';
-import LoansPage from './Pages/LoansPage';
-import UsersPage from './Pages/UsersPage';
-import SettingsPage from './Pages/SettingsPage';
-import MyAccountPage from './Pages/MyAccountPage';
+import BooksPage from './Pages/Books/BooksPage';
+import BookDetailPage from './Pages/Books/BookDetailPage';
+import CreateBookPage from './Pages/Books/CreateBookPage';
+import EditBookPage from './Pages/Books/EditBookPage';
+import LoansPage from './Pages/Loans/LoansPage';
+import LoanDetailPage from './Pages/Loans/LoanDetailPage';
+import UsersPage from './Pages/Users/UsersPage';
+import CreateUserPage from './Pages/Users/CreateUserPage';
+import UserDetailPage from './Pages/Users/UserDetailPage';
+import SettingsPage from './Pages/Settings/SettingsPage';
+import MyAccountPage from './Pages/MyAccount/MyAccountPage';
+import LoginPage from './Pages/LoginPage';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="pt-24">
-          <Routes>
-            <Route path="/" element={<Navigate to="/books" replace />} />
-            <Route path="/books" element={<BooksPage />} />
-            <Route path="/loans" element={<LoansPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/my-account" element={<MyAccountPage />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <div className="app">
+            <Navbar />
+            <main className="pt-20 pb-20 mx-auto w-5/6">
+              <Routes>
+              <Route path="/" element={<Navigate to="/books" replace />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/books" element={<BooksPage />} />
+              <Route 
+                path="/books/create" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <CreateBookPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/books/:id/edit" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <EditBookPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/books/:id" element={<BookDetailPage />} />
+              <Route 
+                path="/loans" 
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <LoansPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/loans/:id" 
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <LoanDetailPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/users" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <UsersPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/users/create" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <CreateUserPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/users/:id" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <UserDetailPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor']}>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/my-account" 
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <MyAccountPage />
+                  </ProtectedRoute>
+                } 
+              />
+            </Routes>
+          </main>
+        </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </Router>
+    </AuthProvider>
+  </ErrorBoundary>
   );
 }
 

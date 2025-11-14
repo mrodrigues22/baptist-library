@@ -35,11 +35,11 @@ namespace Api.Repository
 
                 foreach (var token in tokens)
                 {
-                    var pattern = $"%{token}%";
+                    var unaccentedToken = $"%{token}%";
                     loans = loans.Where(l =>
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Book.Title), pattern) ||
-                        (l.RequesterUser.UserName != null && EF.Functions.ILike(ApplicationDbContext.Unaccent(l.RequesterUser.UserName), pattern)) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Status.Description), pattern)
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Book.Title), ApplicationDbContext.Unaccent(unaccentedToken)) ||
+                        (l.RequesterUser.UserName != null && EF.Functions.ILike(ApplicationDbContext.Unaccent(l.RequesterUser.UserName), ApplicationDbContext.Unaccent(unaccentedToken))) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Status.Description), ApplicationDbContext.Unaccent(unaccentedToken))
                     );
                 }
             }
@@ -47,6 +47,11 @@ namespace Api.Repository
             if (queryObject.Status.HasValue && queryObject.Status.Value <= 5)
             {
                 loans = loans.Where(l => l.StatusId == queryObject.Status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(queryObject.UserId))
+            {
+                loans = loans.Where(l => l.RequesterUserId == queryObject.UserId);
             }
 
             if (!string.IsNullOrWhiteSpace(queryObject.SortBy))
@@ -99,6 +104,24 @@ namespace Api.Repository
 
         public async Task<Loan> CreateLoanAsync(Loan loan, CancellationToken cancellationToken = default)
         {
+            // Get loan duration from settings (assuming setting ID 2 is for loan duration in days)
+            var loanDurationDays = await _context.Settings
+                .Where(s => s.Id == 2)
+                .Select(s => s.Value)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // Default to 14 days if setting not found
+            if (loanDurationDays == 0)
+            {
+                loanDurationDays = 14;
+            }
+
+            var now = DateTime.UtcNow;
+
+            // Set additional properties
+            loan.CheckoutDate = now;
+            loan.ExpectedReturnDate = now.AddDays(loanDurationDays);
+
             await _context.Loans.AddAsync(loan, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -113,8 +136,21 @@ namespace Api.Repository
                 return null;
             }
 
+            // Get loan duration from settings (assuming setting ID 2 is for loan duration in days)
+            var loanDurationDays = await _context.Settings
+                .Where(s => s.Id == 2)
+                .Select(s => s.Value)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // Default to 14 days if setting not found
+            if (loanDurationDays == 0)
+            {
+                loanDurationDays = 14;
+            }
+
             loan.StatusId = 2;
             loan.CheckoutDate = DateTime.UtcNow;
+            loan.ExpectedReturnDate = DateTime.UtcNow.AddDays(loanDurationDays);
             loan.CheckedOutBy = userId;
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -195,6 +231,16 @@ namespace Api.Repository
 
             var createdLoan = await GetLoanAsync(loan.Id, cancellationToken);
             return (true, null, createdLoan);
+        }
+
+        public async Task<List<Loan>> GetLoansByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Loans
+                .Include(l => l.RequesterUser)
+                .Include(l => l.Status)
+                .Where(l => l.BookId == bookId)
+                .OrderByDescending(l => l.RequestDate)
+                .ToListAsync(cancellationToken);
         }
     }
 }

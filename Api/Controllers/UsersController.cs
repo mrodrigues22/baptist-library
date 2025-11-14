@@ -123,11 +123,6 @@ namespace Api.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
                 var user = createDto.ToApplicationUserFromCreateDTO();
                 var createdUser = await _userRepository.CreateUserAsync(user, createDto.Password, createDto.RoleName);
 
@@ -154,11 +149,6 @@ namespace Api.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
                 var userToUpdate = updateDto.ToApplicationUserFromUpdateDTO();
                 var updatedUser = await _userRepository.UpdateUserAsync(id, userToUpdate, updateDto.Password);
 
@@ -187,11 +177,6 @@ namespace Api.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
                 // Check if user can assign this role
                 if (!await CanAssignRole(assignRoleDto.RoleName))
                 {

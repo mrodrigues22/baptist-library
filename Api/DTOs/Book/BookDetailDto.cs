@@ -62,4 +62,7 @@ public class BookDetailDto
 
     [Display(Name = "Já reservado pelo usuário atual")]
     public bool BorrowedByCurrentUser { get; set; }
+
+    [Display(Name = "Empréstimos")]
+    public List<Loan.BookLoanSummaryDto> Loans { get; set; } = new List<Loan.BookLoanSummaryDto>();
 }

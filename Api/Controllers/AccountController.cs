@@ -30,9 +30,6 @@ namespace Api.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
                 var user = new ApplicationUser
                 {
                     UserName = registerDto.Email,
@@ -70,9 +67,6 @@ namespace Api.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
                 var user = await _userManager.Users
                     .FirstOrDefaultAsync(x => x.Email == loginDto.Email.ToLower());
 

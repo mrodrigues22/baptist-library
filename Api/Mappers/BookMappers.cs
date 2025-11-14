@@ -27,7 +27,10 @@ namespace Library.Api.Mappers
                 CreatedByUser = book.CreatedByUser?.UserName,
                 CreatedDate = book.CreatedDate,
                 ModifiedByUser = book.ModifiedByUser?.UserName,
-                ModifiedDate = book.ModifiedDate
+                ModifiedDate = book.ModifiedDate,
+                Loans = book.Loans
+                    .Select(l => l.ToBookLoanSummaryDto())
+                    .ToList()
             };
         }
 

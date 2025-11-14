@@ -61,11 +61,6 @@ namespace Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> CreateBook([FromBody] CreateBookDto bookDto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
@@ -96,11 +91,6 @@ namespace Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDto bookDto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
