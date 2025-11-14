@@ -4,6 +4,7 @@ import { useUserDetail } from '../../hooks/User/useUserDetail';
 import { useUserLoans } from '../../hooks/Loan/useUserLoans';
 import Spinner from '../../components/layout/Spinner';
 import { useAuth } from '../../context/AuthContext';
+import { useUpdateUser, UpdateUserFormData } from '../../hooks/User/useUpdateUser';
 
 const UserDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,88 @@ const UserDetailPage = () => {
   const { loans, loading: loansLoading, error: loansError } = useUserLoans(id || '');
   const { hasRole } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const { updateUser, loading: updateLoading, error: updateError, success: updateSuccess } = useUpdateUser();
+  const [formData, setFormData] = useState<UpdateUserFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    password: ''
+  });
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; phoneNumber?: string }>(() => ({}));
+
+  // Phone mask & validation (same as CreateUserPage)
+  const formatBrazilianPhone = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+    const limited = numbers.slice(0, 11);
+    if (limited.length <= 2) return limited;
+    if (limited.length <= 6) return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
+    if (limited.length <= 10) return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
+    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+  };
+  const validateBrazilianPhone = (phone: string): boolean => {
+    if (!phone) return true;
+    const numbers = phone.replace(/\D/g, '');
+    return numbers.length === 10 || numbers.length === 11;
+  };
+  const validateEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const beginEdit = () => {
+    if (!user) return;
+    setFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber || '',
+      password: ''
+    });
+    setIsEditing(true);
+    setSaveError(null);
+    setValidationErrors({});
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setSaveError(null);
+    setSaving(false);
+  };
+
+  const handleInputChange = (field: keyof UpdateUserFormData, value: string) => {
+    let processedValue = value;
+    if (field === 'phoneNumber') {
+      processedValue = formatBrazilianPhone(value);
+      if (processedValue && !validateBrazilianPhone(processedValue)) {
+        setValidationErrors(prev => ({ ...prev, phoneNumber: 'Telefone inválido. Use o formato: (11) 91234-5678' }));
+      } else {
+        setValidationErrors(prev => { const { phoneNumber, ...rest } = prev; return rest; });
+      }
+    } else if (field === 'email') {
+      if (value && !validateEmail(value)) {
+        setValidationErrors(prev => ({ ...prev, email: 'Email inválido' }));
+      } else {
+        setValidationErrors(prev => { const { email, ...rest } = prev; return rest; });
+      }
+    }
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    if (Object.keys(validationErrors).length > 0) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await updateUser(user.id, formData);
+      await refetch();
+      setIsEditing(false);
+    } catch (err: any) {
+      setSaveError(err.message || 'Erro desconhecido');
+    } finally {
+      setSaving(false);
+    }
+  };
   
   const canManageUsers = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
 
@@ -106,35 +189,121 @@ const UserDetailPage = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Informações Pessoais</h2>
               {canManageUsers && (
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                >
-                  {isEditing ? 'Cancelar' : 'Editar'}
-                </button>
+                <div className="flex items-center gap-3">
+                  {!isEditing && (
+                    <button
+                      onClick={beginEdit}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    >
+                      Editar
+                    </button>
+                  )}
+                  {isEditing && (
+                    <>
+                      <button
+                        onClick={cancelEdit}
+                        disabled={saving}
+                        className="text-gray-600 hover:text-gray-800 font-medium text-sm disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {saving ? 'Salvando...' : 'Salvar'}
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome
-                </label>
-                <p className="text-gray-900">{user.firstName} {user.lastName}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <p className="text-gray-900">{user.email}</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Telefone
-                </label>
-                <p className="text-gray-900">{user.phoneNumber || 'Não informado'}</p>
-              </div>
+              {!isEditing && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    <p className="text-gray-900">{user.firstName} {user.lastName}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <p className="text-gray-900">{user.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                    <p className="text-gray-900">{user.phoneNumber || 'Não informado'}</p>
+                  </div>
+                </>
+              )}
+              {isEditing && (
+                <>
+                  {saveError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+                      {saveError}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Primeiro Nome</label>
+                      <input
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sobrenome</label>
+                      <input
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${validationErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                        disabled={saving}
+                      />
+                      {validationErrors.email && <p className="text-xs text-red-600 mt-1">{validationErrors.email}</p>}
+                    </div>
+                    <div className="md:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                      <input
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        placeholder="(11) 91234-5678"
+                        className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${validationErrors.phoneNumber ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                        disabled={saving}
+                      />
+                      {validationErrors.phoneNumber && <p className="text-xs text-red-600 mt-1">{validationErrors.phoneNumber}</p>}
+                    </div>
+                    <div className="md:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nova Senha (opcional)</label>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password || ''}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={saving}
+                        placeholder="Mínimo 8 caracteres"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

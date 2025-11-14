@@ -20,7 +20,7 @@ const Navbar = () => {
                 <div className={`${flexBetween} mx-auto w-5/6`}>
                     {/* LEFT SIDE */}
                     <div className={`${flexBetween} w-full`}>
-                        <img src="/logo.svg" alt="Logo" />
+                        <img src="/logo-min.svg" className="h-15" alt="Logo" />
                     </div>
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (

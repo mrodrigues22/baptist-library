@@ -14,7 +14,7 @@ const BookDetailPage = () => {
   const { book, loading, error, refetch } = useBookDetail(id || '');
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { hasRole } = useAuth();
+  const { hasRole, isLoggedIn } = useAuth();
   const { borrowBook, loading: borrowing } = useBorrowForSelf();
   const { deleteBook, loading: deleting } = useDeleteBook();
   
@@ -40,6 +40,9 @@ const BookDetailPage = () => {
   };
 
   const getTooltipMessage = () => {
+    if (!isLoggedIn) {
+      return 'Você precisa estar autenticado para pegar emprestado';
+    }
     if (book?.borrowedByCurrentUser) {
       return 'Você já possui este livro emprestado';
     }
@@ -49,7 +52,7 @@ const BookDetailPage = () => {
     return '';
   };
 
-  const isBorrowDisabled = book?.borrowedByCurrentUser || book?.availableCopies === 0;
+  const isBorrowDisabled = !isLoggedIn || book?.borrowedByCurrentUser || book?.availableCopies === 0;
 
   if (loading) {
     return (
