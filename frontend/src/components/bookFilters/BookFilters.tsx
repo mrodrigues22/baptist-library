@@ -44,9 +44,9 @@ const BookFilters: React.FC<BookFiltersProps> = ({ filters, onFiltersChange, cat
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Search */}
-        <div>
+        <div className="md:col-span-3">
           <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
             Buscar
           </label>
