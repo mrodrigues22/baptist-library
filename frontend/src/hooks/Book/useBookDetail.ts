@@ -3,6 +3,13 @@ import AuthService from '../../services/AuthService';
 
 const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
 
+export interface Loan {
+  id: number;
+  reader: string;
+  checkoutDate?: string;
+  status: string;
+}
+
 export interface BookDetail {
   id: number;
   title: string;
@@ -24,6 +31,7 @@ export interface BookDetail {
   modifiedByUser?: string;
   modifiedDate?: string;
   borrowedByCurrentUser: boolean;
+  loans: Loan[];
 }
 
 interface BookDetailApiRaw {
@@ -47,6 +55,16 @@ interface BookDetailApiRaw {
   ModifiedByUser?: string;
   ModifiedDate?: string;
   BorrowedByCurrentUser?: boolean;
+  Loans?: Array<{
+    Id?: number;
+    Reader?: string;
+    CheckoutDate?: string;
+    Status?: string;
+    id?: number;
+    reader?: string;
+    checkoutDate?: string;
+    status?: string;
+  }>;
   id?: number;
   title?: string;
   edition?: number;
@@ -67,6 +85,16 @@ interface BookDetailApiRaw {
   modifiedByUser?: string;
   modifiedDate?: string;
   borrowedByCurrentUser?: boolean;
+  loans?: Array<{
+    Id?: number;
+    Reader?: string;
+    CheckoutDate?: string;
+    Status?: string;
+    id?: number;
+    reader?: string;
+    checkoutDate?: string;
+    status?: string;
+  }>;
 }
 
 interface UseBookDetailResult {
@@ -97,7 +125,13 @@ function normalizeBookDetail(raw: BookDetailApiRaw): BookDetail {
     createdDate: raw.createdDate ?? raw.CreatedDate ?? '',
     modifiedByUser: raw.modifiedByUser ?? raw.ModifiedByUser,
     modifiedDate: raw.modifiedDate ?? raw.ModifiedDate,
-    borrowedByCurrentUser: raw.borrowedByCurrentUser ?? raw.BorrowedByCurrentUser ?? false
+    borrowedByCurrentUser: raw.borrowedByCurrentUser ?? raw.BorrowedByCurrentUser ?? false,
+    loans: (raw.Loans ?? raw.loans ?? []).map((loan: any) => ({
+      id: loan.id ?? loan.Id ?? 0,
+      reader: loan.reader ?? loan.Reader ?? '',
+      checkoutDate: loan.checkoutDate ?? loan.CheckoutDate,
+      status: loan.status ?? loan.Status ?? ''
+    }))
   };
 }
 

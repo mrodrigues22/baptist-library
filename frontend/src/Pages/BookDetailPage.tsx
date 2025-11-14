@@ -301,6 +301,55 @@ const BookDetailPage = () => {
           )}
         </div>
 
+        {/* Loans section */}
+        {book.loans && book.loans.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">
+              Empréstimos Ativos
+            </h2>
+            <div className="bg-gray-50 rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Leitor
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Data de Retirada
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {book.loans.map((loan) => (
+                    <tr key={loan.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {loan.reader}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {loan.checkoutDate ? formatDate(loan.checkoutDate) : 'Pendente'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          loan.status === 'Emprestado' 
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : loan.status === 'Aguardando retirada'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {loan.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* Metadata */}
         <div className="pt-6 border-t border-gray-200 text-sm text-gray-500">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
