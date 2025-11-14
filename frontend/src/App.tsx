@@ -10,6 +10,7 @@ import EditBookPage from './Pages/Books/EditBookPage';
 import LoansPage from './Pages/Loans/LoansPage';
 import LoanDetailPage from './Pages/Loans/LoanDetailPage';
 import UsersPage from './Pages/Users/UsersPage';
+import PendingUsersPage from './Pages/Users/PendingUsersPage';
 import CreateUserPage from './Pages/Users/CreateUserPage';
 import UserDetailPage from './Pages/Users/UserDetailPage';
 import SettingsPage from './Pages/Settings/SettingsPage';
@@ -71,6 +72,14 @@ function App() {
                 element={
                   <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
                     <UsersPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/users/pending" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <PendingUsersPage />
                   </ProtectedRoute>
                 } 
               />
