@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import AvailabilityTag from '../availabilityTag/availabilityTag'
 
 interface Props {
@@ -13,11 +14,19 @@ interface Props {
 }
 
 const BookSummary = ({ id, title, authors, publisher, publicationYear, edition, copiesAvailable, borrowedByUser }: Props) => {
+  const navigate = useNavigate();
   const authorText = authors.length >= 3 ? `${authors[0]} et al.` : authors.join(', ');
   const isAvailable = copiesAvailable !== undefined && copiesAvailable > 0;
   
+  const handleClick = () => {
+    navigate(`/books/${id}`);
+  };
+  
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-200 relative">
+    <div 
+      onClick={handleClick}
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-200 relative cursor-pointer"
+    >
         {!borrowedByUser && copiesAvailable !== undefined && (
           <AvailabilityTag isAvailable={isAvailable} />
         )}

@@ -2,6 +2,7 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import BooksPage from './Pages/BooksPage';
+import BookDetailPage from './Pages/BookDetailPage';
 import LoansPage from './Pages/LoansPage';
 import UsersPage from './Pages/UsersPage';
 import SettingsPage from './Pages/SettingsPage';
@@ -21,6 +22,7 @@ function App() {
               <Route path="/" element={<Navigate to="/books" replace />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/books" element={<BooksPage />} />
+              <Route path="/books/:id" element={<BookDetailPage />} />
               <Route 
                 path="/loans" 
                 element={
