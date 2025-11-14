@@ -15,6 +15,7 @@ import UserDetailPage from './Pages/Users/UserDetailPage';
 import SettingsPage from './Pages/Settings/SettingsPage';
 import MyAccountPage from './Pages/MyAccount/MyAccountPage';
 import LoginPage from './Pages/LoginPage';
+import RegisterPage from './Pages/RegisterPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -30,6 +31,7 @@ function App() {
               <Routes>
               <Route path="/" element={<Navigate to="/books" replace />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
               <Route path="/books" element={<BooksPage />} />
               <Route 
                 path="/books/create" 
