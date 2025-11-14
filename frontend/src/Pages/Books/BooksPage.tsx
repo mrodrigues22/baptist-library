@@ -1,16 +1,19 @@
 import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useBooks } from '../../hooks/Book/useBooks';
 import { useCategories } from '../../hooks/Category/useCategories';
+import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/layout/Spinner';
 import BookList from '../../components/bookList/bookList';
 import BookFilters from '../../components/bookFilters/BookFilters';
 
 
 const BooksPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { books, loading, error, refetch, meta, filters, setFilters } = useBooks();
   const { categories, loading: categoriesLoading } = useCategories();
+  const { hasRole } = useAuth();
 
   // Apply search and category parameters from URL
   useEffect(() => {
@@ -55,10 +58,20 @@ const BooksPage = () => {
   const safeBooks = books || [];
   
 
+  const canManageBooks = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
+
   return (
     <div className="pt-20 px-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold">Acervo</h1>
+        {canManageBooks && (
+          <button
+            onClick={() => navigate('/books/create')}
+            className="bg-primary hover:bg-secondary text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+          >
+            + Adicionar Livro
+          </button>
+        )}
       </div>
       
       {/* Filters */}

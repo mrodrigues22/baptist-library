@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navbar from './components/layout/Navbar';
 import BooksPage from './Pages/Books/BooksPage';
 import BookDetailPage from './Pages/Books/BookDetailPage';
+import CreateBookPage from './Pages/Books/CreateBookPage';
+import EditBookPage from './Pages/Books/EditBookPage';
 import LoansPage from './Pages/Loans/LoansPage';
 import LoanDetailPage from './Pages/Loans/LoanDetailPage';
 import UsersPage from './Pages/Users/UsersPage';
@@ -23,6 +25,22 @@ function App() {
               <Route path="/" element={<Navigate to="/books" replace />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/books" element={<BooksPage />} />
+              <Route 
+                path="/books/create" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <CreateBookPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/books/:id/edit" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <EditBookPage />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/books/:id" element={<BookDetailPage />} />
               <Route 
                 path="/loans" 

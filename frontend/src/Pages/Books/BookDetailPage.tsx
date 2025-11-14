@@ -98,18 +98,38 @@ const BookDetailPage = () => {
       <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 max-w-5xl">
         {/* Header section */}
         <div className="mb-6 pb-6 border-b border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {book.title}
-          </h1>
-          <div className="flex flex-wrap gap-4 text-gray-600 mt-3">
-            <span className="text-lg">
-              {book.edition}ª edição
-            </span>
-            {book.publicationYear && (
-              <span className="text-lg">• {book.publicationYear}</span>
-            )}
-            {book.volume && (
-              <span className="text-lg">• Volume {book.volume}</span>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {book.title}
+              </h1>
+              <div className="flex flex-wrap gap-4 text-gray-600 mt-3">
+                <span className="text-lg">
+                  {book.edition}ª edição
+                </span>
+                {book.publicationYear && (
+                  <span className="text-lg">• {book.publicationYear}</span>
+                )}
+                {book.volume && (
+                  <span className="text-lg">• Volume {book.volume}</span>
+                )}
+              </div>
+            </div>
+            {canLoanBooks && (
+              <button
+                onClick={() => navigate(`/books/${id}/edit`)}
+                className="ml-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors duration-200 flex items-center gap-2"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+                Editar
+              </button>
             )}
           </div>
         </div>
