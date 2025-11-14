@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBookDetail } from '../hooks/useBookDetail';
 import Spinner from '../components/layout/Spinner';
+import LoanBookModal from '../components/LoanBookModal';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { book, loading, error } = useBookDetail(id || '');
+  const { book, loading, error, refetch } = useBookDetail(id || '');
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
 
   if (loading) {
     return (
@@ -60,7 +62,7 @@ const BookDetailPage = () => {
       {/* Back button */}
       <button
         onClick={() => navigate('/books')}
-        className="text-blue-600 hover:text-blue-800 font-medium mb-6 flex items-center"
+        className="text-blue-600 hover:text-secondary font-medium mb-6 flex items-center"
       >
         ← Voltar para o acervo
       </button>
@@ -174,6 +176,26 @@ const BookDetailPage = () => {
               Você já possui este livro emprestado
             </div>
           )}
+          
+          {/* Loan button */}
+          {book.availableCopies > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={() => setIsLoanModalOpen(true)}
+                className="w-full md:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                </svg>
+                Emprestar para um leitor
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Technical details */}
@@ -220,6 +242,17 @@ const BookDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Loan Modal */}
+      <LoanBookModal
+        isOpen={isLoanModalOpen}
+        onClose={() => setIsLoanModalOpen(false)}
+        bookId={book.id}
+        bookTitle={book.title}
+        onSuccess={() => {
+          refetch();
+        }}
+      />
     </div>
   );
 };
