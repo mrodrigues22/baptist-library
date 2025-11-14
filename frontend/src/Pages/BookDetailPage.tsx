@@ -4,6 +4,7 @@ import { useBookDetail } from '../hooks/Book/useBookDetail';
 import Spinner from '../components/layout/Spinner';
 import LoanBookModal from '../components/LoanBookModal';
 import { useAuth } from '../context/AuthContext';
+import { useBorrowForSelf } from '../hooks/Loan/useBorrowForSelf';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,8 +12,30 @@ const BookDetailPage = () => {
   const { book, loading, error, refetch } = useBookDetail(id || '');
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const { hasRole } = useAuth();
+  const { borrowBook, loading: borrowing } = useBorrowForSelf();
   
-  const canLoanBooks = hasRole(['Administrador', 'Bibliotecario', 'Developer']);
+  const canLoanBooks = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
+
+  const handleBorrowForSelf = async () => {
+    try {
+      await borrowBook(parseInt(id || '0'));
+      refetch();
+    } catch (err) {
+      console.error('Error borrowing book:', err);
+    }
+  };
+
+  const getTooltipMessage = () => {
+    if (book?.borrowedByCurrentUser) {
+      return 'Você já possui este livro emprestado';
+    }
+    if (book?.availableCopies === 0) {
+      return 'Não há exemplares disponíveis no momento';
+    }
+    return '';
+  };
+
+  const isBorrowDisabled = book?.borrowedByCurrentUser || book?.availableCopies === 0;
 
   if (loading) {
     return (
@@ -181,12 +204,18 @@ const BookDetailPage = () => {
             </div>
           )}
           
-          {/* Loan button - Only visible for Administrador, Bibliotecario, and Developer */}
-          {book.availableCopies > 0 && canLoanBooks && (
-            <div className="mt-4">
+          {/* Action buttons */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+            {/* Borrow for self button */}
+            <div className="relative group flex-1">
               <button
-                onClick={() => setIsLoanModalOpen(true)}
-                className="w-full md:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                onClick={handleBorrowForSelf}
+                disabled={isBorrowDisabled || borrowing}
+                className={`w-full px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                  isBorrowDisabled || borrowing
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
               >
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
@@ -194,12 +223,54 @@ const BookDetailPage = () => {
                   viewBox="0 0 20 20" 
                   fill="currentColor"
                 >
-                  <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
                 </svg>
-                Emprestar para um leitor
+                {borrowing ? 'Solicitando...' : 'Pegar emprestado'}
               </button>
+              {isBorrowDisabled && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                  {getTooltipMessage()}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div className="border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Loan to another user button - Only visible for Administrador, Bibliotecario, and Developer */}
+            {canLoanBooks && (
+              <div className="relative group flex-1">
+                <button
+                  onClick={() => setIsLoanModalOpen(true)}
+                  disabled={book.availableCopies === 0}
+                  className={`w-full px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                    book.availableCopies === 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-5 w-5" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                  </svg>
+                  Emprestar para um leitor
+                </button>
+                {book.availableCopies === 0 && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                    Não há exemplares disponíveis no momento
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                      <div className="border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Technical details */}

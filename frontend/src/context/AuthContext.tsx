@@ -57,14 +57,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (token) {
       const decoded = parseJwt(token);
       if (decoded) {
-        // Extract roles from token - they can be in different formats
-        let roles: string[] = [];
-        if (decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']) {
-          const roleData = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-          roles = Array.isArray(roleData) ? roleData : [roleData];
-        }
-
-        setUser({
+      
+      // Extract roles from token - try both formats
+      let roles: string[] = [];
+      const roleData = decoded['role'] || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      if (roleData) {
+        roles = Array.isArray(roleData) ? roleData : [roleData];
+      }
+      
+      setUser({
           email: decoded.email || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '',
           firstName: decoded.given_name || '',
           lastName: decoded.family_name || '',
@@ -79,12 +80,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('token', token);
     const decoded = parseJwt(token);
     if (decoded) {
-      let roles: string[] = [];
-      if (decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']) {
-        const roleData = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+            let roles: string[] = [];
+      const roleData = decoded['role'] || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      if (roleData) {
         roles = Array.isArray(roleData) ? roleData : [roleData];
       }
-
+      
       setUser({
         email: decoded.email || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '',
         firstName: decoded.given_name || '',
