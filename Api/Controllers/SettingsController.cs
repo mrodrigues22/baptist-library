@@ -48,11 +48,6 @@ namespace Api.Controllers
         [Authorize(Roles = "Administrador,Desenvolvedor")]
         public async Task<IActionResult> UpdateSetting(int id, [FromBody] UpdateSettingDTO settingDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var updatedSetting = await _settingRepository.UpdateSettingAsync(id, settingDto.Value);
 
             if (updatedSetting == null)

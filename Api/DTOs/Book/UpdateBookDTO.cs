@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Api.Attributes;
 
 namespace Library.Api.DTOs.Book
 {
@@ -30,9 +31,7 @@ namespace Library.Api.DTOs.Book
         [Range(0, int.MaxValue, ErrorMessage = "Quantity available must be zero or positive.")]
         public int QuantityAvailable { get; set; }
 
-        [StringLength(50)]
-        [MinLength(10, ErrorMessage = "The ISBN must be at least 10 characters long.")]
-        [MaxLength(13, ErrorMessage = "The ISBN cannot exceed 13 characters.")]
+        [RegularExpression(@"^(\d{10}|\d{13})$", ErrorMessage = "The ISBN must be exactly 10 or 13 digits.")]
         public string? Isbn { get; set; }
 
         [StringLength(50)]
@@ -48,6 +47,8 @@ namespace Library.Api.DTOs.Book
         [StringLength(255)]
         public string? Origin { get; set; }
 
+        [Required(ErrorMessage = "At least one author is required.")]
+        [MinListLength(1, ErrorMessage = "At least one author is required.")]
         public List<string> AuthorNames { get; set; } = new List<string>();
 
         public List<string> TagWords { get; set; } = new List<string>();
