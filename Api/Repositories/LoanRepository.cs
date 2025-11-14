@@ -99,6 +99,24 @@ namespace Api.Repository
 
         public async Task<Loan> CreateLoanAsync(Loan loan, CancellationToken cancellationToken = default)
         {
+            // Get loan duration from settings (assuming setting ID 2 is for loan duration in days)
+            var loanDurationDays = await _context.Settings
+                .Where(s => s.Id == 2)
+                .Select(s => s.Value)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // Default to 14 days if setting not found
+            if (loanDurationDays == 0)
+            {
+                loanDurationDays = 14;
+            }
+
+            var now = DateTime.UtcNow;
+
+            // Set additional properties
+            loan.CheckoutDate = now;
+            loan.ExpectedReturnDate = now.AddDays(loanDurationDays);
+
             await _context.Loans.AddAsync(loan, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
