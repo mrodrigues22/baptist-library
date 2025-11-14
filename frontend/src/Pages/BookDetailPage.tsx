@@ -93,12 +93,13 @@ const BookDetailPage = () => {
             </h2>
             <div className="flex flex-wrap gap-2">
               {book.authors.map((author, index) => (
-                <span
+                <button
                   key={index}
-                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                  onClick={() => navigate(`/books?search=${encodeURIComponent(author)}`)}
+                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm hover:bg-blue-100 transition-colors cursor-pointer"
                 >
                   {author}
-                </span>
+                </button>
               ))}
             </div>
           </div>
@@ -116,16 +117,17 @@ const BookDetailPage = () => {
         {book.categories.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">
-              Gênero(s)
+              Categoria(s)
             </h2>
             <div className="flex flex-wrap gap-2">
               {book.categories.map((category, index) => (
-                <span
+                <button
                   key={index}
-                  className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm"
+                  onClick={() => navigate(`/books?category=${encodeURIComponent(category)}`)}
+                  className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm hover:bg-green-100 transition-colors cursor-pointer"
                 >
                   {category}
-                </span>
+                </button>
               ))}
             </div>
           </div>

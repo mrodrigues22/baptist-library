@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useBooks } from '../hooks/useBooks';
 import { useCategories } from '../hooks/useCategories';
 import Spinner from '../components/layout/Spinner';
@@ -7,8 +8,49 @@ import BookFilters from '../components/bookFilters/BookFilters';
 
 
 const BooksPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { books, loading, error, refetch, meta, filters, setFilters } = useBooks();
   const { categories, loading: categoriesLoading } = useCategories();
+
+  // Apply search and category parameters from URL
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    const categoryFromUrl = searchParams.get('category');
+    
+    // Don't process if no URL params
+    if (!searchFromUrl && !categoryFromUrl) {
+      return;
+    }
+    
+    const newFilters = { ...filters };
+    let hasChanges = false;
+    
+    if (searchFromUrl) {
+      newFilters.searchTerm = searchFromUrl;
+      hasChanges = true;
+    }
+    
+    if (categoryFromUrl && !categoriesLoading && categories.length > 0) {
+      // Find category ID by name or description
+      const category = categories.find(
+        cat => cat.name.toLowerCase() === categoryFromUrl.toLowerCase() ||
+               (cat.description && cat.description.toLowerCase() === categoryFromUrl.toLowerCase())
+      );
+      if (category) {
+        newFilters.categoryId = category.id;
+        hasChanges = true;
+      }
+    }
+    
+    if (hasChanges) {
+      setFilters(newFilters);
+      // Clear the URL parameters after applying them
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('search');
+      newParams.delete('category');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, categoriesLoading, categories]); // Re-run when URL params or categories change
 
   const safeBooks = books || [];
   
