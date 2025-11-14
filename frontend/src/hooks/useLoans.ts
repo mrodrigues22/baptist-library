@@ -7,6 +7,8 @@ export interface Loan {
   book: string;
   reader: string;
   requestDate: string;
+  returnDate?: string;
+  expectedReturnDate?: string;
   status: string;
 }
 
@@ -15,11 +17,15 @@ interface LoansApiRawItem {
   Book?: string;
   Reader?: string;
   RequestDate?: string;
+  ReturnDate?: string;
+  ExpectedReturnDate?: string;
   Status?: string;
   id?: number;
   book?: string;
   reader?: string;
   requestDate?: string;
+  returnDate?: string;
+  expectedReturnDate?: string;
   status?: string;
 }
 
@@ -60,6 +66,8 @@ function normalizeItem(raw: LoansApiRawItem): Loan {
     book: raw.book ?? raw.Book ?? '',
     reader: raw.reader ?? raw.Reader ?? '',
     requestDate: raw.requestDate ?? raw.RequestDate ?? '',
+    returnDate: raw.returnDate ?? raw.ReturnDate,
+    expectedReturnDate: raw.expectedReturnDate ?? raw.ExpectedReturnDate,
     status: raw.status ?? raw.Status ?? ''
   };
 }

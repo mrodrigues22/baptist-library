@@ -5,13 +5,13 @@ interface Props {
   bookTitle: string;
   userName: string;
   loanDate: string;
-  dueDate: string;
+  expectedReturnDate: string;
   returnDate?: string;
   status: string;
   isOverdue: boolean;
 }
 
-const LoanSummary = ({ id, bookTitle, userName, loanDate, dueDate, returnDate, status, isOverdue }: Props) => {
+const LoanSummary = ({ id, bookTitle, userName, loanDate, expectedReturnDate, returnDate, status, isOverdue }: Props) => {
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -45,8 +45,13 @@ const LoanSummary = ({ id, bookTitle, userName, loanDate, dueDate, returnDate, s
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-200 relative">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
         {getStatusBadge()}
+        {!returnDate && (
+          <span className="text-xs text-gray-600">
+            Devolução: {formatDate(expectedReturnDate)}
+          </span>
+        )}
       </div>
       
       <h3 className="text-xl font-bold text-gray-800 mb-0 pr-32">
@@ -63,9 +68,9 @@ const LoanSummary = ({ id, bookTitle, userName, loanDate, dueDate, returnDate, s
             <span className="font-medium">Solicitado em:</span> {formatDate(loanDate)}
           </div>
         )}
-        {dueDate && (
+        {expectedReturnDate && (
           <div>
-            <span className="font-medium">Prazo:</span> {formatDate(dueDate)}
+            <span className="font-medium">Prazo:</span> {formatDate(expectedReturnDate)}
           </div>
         )}
         {returnDate && (

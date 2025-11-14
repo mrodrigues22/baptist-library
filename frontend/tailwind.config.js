@@ -6,9 +6,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#012646',
-        lighter: '#023E8A',
-        secondary: '#EEEEEE',
+        primary: '#2FBF66',
+        secondary: '#012646',
+        light: '#EEEEEE',
       },
       backgroundImage: (theme) => ({
         "bible": "url('/assets/images/bible.jpg')",

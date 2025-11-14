@@ -6,7 +6,7 @@ interface Loan {
   bookTitle: string;
   userName: string;
   loanDate: string;
-  dueDate: string;
+  expectedReturnDate: string;
   returnDate?: string;
   status: string;
   isOverdue: boolean;
@@ -26,7 +26,7 @@ const LoanList = ({ loans }: Props) => {
           bookTitle={loan.bookTitle}
           userName={loan.userName}
           loanDate={loan.loanDate}
-          dueDate={loan.dueDate}
+          expectedReturnDate={loan.expectedReturnDate}
           returnDate={loan.returnDate}
           status={loan.status}
           isOverdue={loan.isOverdue}

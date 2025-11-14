@@ -20,7 +20,7 @@ const Navbar = () => {
                 <div className={`${flexBetween} mx-auto w-5/6`}>
                     {/* LEFT SIDE */}
                     <div className={`${flexBetween} w-full`}>
-                        <h1 className="text-xl font-bold">Biblioteca PIB</h1>
+                        <img src="/logo.svg" alt="Logo" />
                     </div>
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (
@@ -36,14 +36,14 @@ const Navbar = () => {
                                 {!isLoggedIn ? (
                                     <button 
                                         onClick={() => navigate('/login')} 
-                                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors duration-300"
                                     >
                                         Login
                                     </button>
                                 ) : (
                                     <button 
                                         onClick={logout} 
-                                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        className="px-4 py-2 border border-secondary text-secondary rounded hover:bg-secondary hover:text-white transition-colors duration-300"
                                     >
                                         Sair
                                     </button>
@@ -82,14 +82,14 @@ const Navbar = () => {
                         {!isLoggedIn ? (
                             <button 
                                 onClick={() => navigate('/login')} 
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-fit"
+                                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary w-fit transition-colors duration-300"
                             >
                                 Login
                             </button>
                         ) : (
                             <button 
                                 onClick={logout} 
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-fit"
+                                className="px-4 py-2 border border-secondary text-secondary rounded w-fit transition-colors duration-300 hover:bg-secondary hover:text-white"
                             >
                                 Sair
                             </button>

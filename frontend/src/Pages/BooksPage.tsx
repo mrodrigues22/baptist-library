@@ -12,21 +12,11 @@ const BooksPage = () => {
 
   const safeBooks = books || [];
   
-  console.log('BooksPage render:', { loading, booksLength: safeBooks.length, error });
 
   return (
     <div className="pt-20 px-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold">Acervo</h1>
-      </div>
-      <div className="text-sm text-gray-500 mb-4">
-        {meta.totalTitles !== null && meta.totalCopies !== null && (
-          <span>
-            Títulos: {meta.totalTitles}
-            <br />
-            Exemplares: {meta.totalCopies}
-          </span>
-        )}
       </div>
       
       {/* Filters */}
@@ -60,6 +50,16 @@ const BooksPage = () => {
           }))}
         />
       )}
+      
+      <div className="text-sm text-gray-500 mt-4">
+        {meta.totalTitles !== null && meta.totalCopies !== null && (
+          <span>
+            Títulos: {meta.totalTitles}
+            <br />
+            Exemplares: {meta.totalCopies}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

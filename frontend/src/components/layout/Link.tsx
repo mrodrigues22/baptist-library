@@ -13,7 +13,7 @@ const Link = ({ page, to }: Props) => {
 
     return (
         <RouterLink
-            className={`${isSelected ? 'text-primary' : ''} transition duration-150 hover:text-lighter font-bold`}
+            className={`${isSelected ? 'text-primary' : ''} transition duration-150 delay-75 hover:text-primary font-bold`}
             to={to}
         >
             {page}

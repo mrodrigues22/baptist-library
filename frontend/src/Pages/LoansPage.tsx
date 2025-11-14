@@ -9,19 +9,11 @@ const LoansPage = () => {
 
   const safeLoans = loans || [];
   
-  console.log('LoansPage render:', { loading, loansLength: safeLoans.length, error });
 
   return (
     <div className="pt-20 px-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold">Empréstimos</h1>
-      </div>
-      <div className="text-sm text-gray-500 mb-4">
-        {meta.totalCount !== null && (
-          <div>
-            <span>Total de empréstimos: {meta.totalCount}</span>
-          </div>
-        )}
       </div>
       
       {/* Filters */}
@@ -45,13 +37,20 @@ const LoansPage = () => {
             bookTitle: l.book,
             userName: l.reader,
             loanDate: l.requestDate,
-            dueDate: '',
-            returnDate: undefined,
+            expectedReturnDate: l.expectedReturnDate || '',
+            returnDate: l.returnDate || '',
             status: l.status,
             isOverdue: false
           }))}
         />
       )}
+      <div className="text-sm text-gray-500 mt-4">
+        {meta.totalCount !== null && (
+          <div>
+            <span>Total de empréstimos: {meta.totalCount}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
