@@ -323,7 +323,7 @@ const BookDetailPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {book.loans.map((loan) => (
+                  {book.loans.slice().reverse().map((loan) => (
                     <tr 
                       key={loan.id} 
                       onClick={() => navigate(`/loans/${loan.id}`)}
