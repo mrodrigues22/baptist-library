@@ -43,12 +43,12 @@ namespace Api.Repository
                 {
                     var pattern = $"%{token}%";
                     books = books.Where(b =>
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Title), pattern) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Isbn), pattern) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Publisher.Name), pattern) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Cdd), pattern) ||
-                        b.BookAuthors.Any(ba => EF.Functions.ILike(ApplicationDbContext.Unaccent(ba.Author.FullName), pattern)) ||
-                        b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), pattern))
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Title), ApplicationDbContext.Unaccent(pattern)) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Isbn), ApplicationDbContext.Unaccent(pattern)) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Publisher.Name), ApplicationDbContext.Unaccent(pattern)) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Cdd), ApplicationDbContext.Unaccent(pattern)) ||
+                        b.BookAuthors.Any(ba => EF.Functions.ILike(ApplicationDbContext.Unaccent(ba.Author.FullName), ApplicationDbContext.Unaccent(pattern))) ||
+                        b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), ApplicationDbContext.Unaccent(pattern)))
                     );
                 }
             }
@@ -114,12 +114,12 @@ namespace Api.Repository
                 {
                     var pattern = $"%{token}%";
                     booksQuery = booksQuery.Where(b =>
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Title), pattern) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Isbn), pattern) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Publisher.Name), pattern) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Cdd), pattern) ||
-                        b.BookAuthors.Any(ba => EF.Functions.ILike(ApplicationDbContext.Unaccent(ba.Author.FullName), pattern)) ||
-                        b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), pattern))
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Title), ApplicationDbContext.Unaccent(pattern)) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Isbn), ApplicationDbContext.Unaccent(pattern)) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Publisher.Name), ApplicationDbContext.Unaccent(pattern)) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(b.Cdd), ApplicationDbContext.Unaccent(pattern)) ||
+                        b.BookAuthors.Any(ba => EF.Functions.ILike(ApplicationDbContext.Unaccent(ba.Author.FullName), ApplicationDbContext.Unaccent(pattern))) ||
+                        b.BookTags.Any(bt => EF.Functions.ILike(ApplicationDbContext.Unaccent(bt.TagWord.Word), ApplicationDbContext.Unaccent(pattern)))
                     );
                 }
             }

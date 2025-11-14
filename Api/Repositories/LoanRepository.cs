@@ -35,11 +35,11 @@ namespace Api.Repository
 
                 foreach (var token in tokens)
                 {
-                    var pattern = $"%{token}%";
+                    var unaccentedToken = $"%{token}%";
                     loans = loans.Where(l =>
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Book.Title), pattern) ||
-                        (l.RequesterUser.UserName != null && EF.Functions.ILike(ApplicationDbContext.Unaccent(l.RequesterUser.UserName), pattern)) ||
-                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Status.Description), pattern)
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Book.Title), ApplicationDbContext.Unaccent(unaccentedToken)) ||
+                        (l.RequesterUser.UserName != null && EF.Functions.ILike(ApplicationDbContext.Unaccent(l.RequesterUser.UserName), ApplicationDbContext.Unaccent(unaccentedToken))) ||
+                        EF.Functions.ILike(ApplicationDbContext.Unaccent(l.Status.Description), ApplicationDbContext.Unaccent(unaccentedToken))
                     );
                 }
             }
