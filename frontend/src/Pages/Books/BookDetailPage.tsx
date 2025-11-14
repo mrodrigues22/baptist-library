@@ -190,12 +190,13 @@ const BookDetailPage = () => {
             </h2>
             <div className="flex flex-wrap gap-2">
               {book.tags.map((tag, index) => (
-                <span
+                <button
                   key={index}
-                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm"
+                  onClick={() => navigate(`/books?search=${encodeURIComponent(tag)}`)}
+                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors cursor-pointer"
                 >
                   {tag}
-                </span>
+                </button>
               ))}
             </div>
           </div>
