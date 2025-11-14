@@ -46,22 +46,24 @@ const UsersPage = () => {
     <div className="pt-20 px-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold">Usuários</h1>
-        {canManageUsers && hasPendingUsers && (
-          <button
-            onClick={() => navigate('/users/pending')}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 mr-2"
-          >
-            Aprovar Pendentes
-          </button>
-        )}
-        {canManageUsers && (
-          <button
-            onClick={() => navigate('/users/create')}
-            className="bg-primary hover:bg-secondary text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
-          >
-            + Adicionar Usuário
-          </button>
-        )}
+        <div className="flex gap-2">
+          {canManageUsers && hasPendingUsers && (
+            <button
+              onClick={() => navigate('/users/pending')}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+            >
+              Aprovar pendentes
+            </button>
+          )}
+          {canManageUsers && (
+            <button
+              onClick={() => navigate('/users/create')}
+              className="bg-primary hover:bg-secondary text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+            >
+              + Adicionar Usuário
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Filters */}

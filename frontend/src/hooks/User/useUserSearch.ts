@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authenticatedGet } from '../../shared/apiUtils';
+import { logError } from '../../shared/utils/logger';
 
 interface User {
   id: string;
@@ -46,7 +47,7 @@ export const useUserSearch = (searchTerm: string, enabled: boolean = true) => {
     } catch (err: any) {
       if (err.name === 'AbortError') return;
       setError('Erro ao carregar usuários');
-      console.error('Error fetching users:', err);
+      logError('Error fetching users:', err);
     } finally {
       setLoading(false);
     }

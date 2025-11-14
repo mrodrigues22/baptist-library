@@ -86,11 +86,24 @@ namespace Api.Controllers
 
         // GET: api/users/{id}
         [HttpGet("{id}")]
-        [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
+        [Authorize]
         public async Task<IActionResult> GetUserDetails(string id)
         {
             try
             {
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Users can view their own profile, or staff roles can view any profile
+                var canViewProfile = id == currentUserId || 
+                                   User.IsInRole("Administrador") || 
+                                   User.IsInRole("Desenvolvedor") || 
+                                   User.IsInRole("Bibliotecário");
+                
+                if (!canViewProfile)
+                {
+                    return Forbid();
+                }
+
                 var user = await _userRepository.GetUserByIdAsync(id);
                 if (user == null)
                 {
@@ -100,7 +113,11 @@ namespace Api.Controllers
                 var roles = await _userRepository.GetUserRolesAsync(id);
                 var totalLoans = await _userRepository.GetUserTotalLoansAsync(id);
                 var activeLoans = await _userRepository.GetUserActiveLoansAsync(id);
-                var assignableRoles = await GetAssignableRoles();
+                
+                // Only provide assignableRoles for staff members
+                var assignableRoles = canViewProfile && id != currentUserId 
+                    ? await GetAssignableRoles() 
+                    : new List<string>();
 
                 var userDto = user.ToUserDetailDTO(roles, totalLoans, activeLoans);
 
@@ -172,7 +189,6 @@ namespace Api.Controllers
         // POST: api/users/{id}/assign-role
         [HttpPost("{id}/assign-role")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignRole(string id, [FromBody] AssignRoleDTO assignRoleDto)
         {
             try

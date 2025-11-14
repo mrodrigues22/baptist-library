@@ -16,16 +16,22 @@ const Navbar = () => {
 
     return (
         <nav>
-            <div className={`${flexBetween} fixed top-0 z-30 w-full py-6 bg-white shadow-md`}>
+            <div className={`${flexBetween} fixed top-0 z-30 w-full py-2 bg-light shadow-md`}>
                 <div className={`${flexBetween} mx-auto w-5/6`}>
                     {/* LEFT SIDE */}
                     <div className={`${flexBetween} w-full`}>
-                        <img src="/logo-min.svg" className="h-15" alt="Logo" />
+                        <img 
+                            src="/logo-min.svg" 
+                            className="h-12 cursor-pointer" 
+                            alt="Logo" 
+                            onClick={() => navigate('/')}
+                        />
                     </div>
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (
                         <>
                             <div className={`flex items-center justify-end mr-10 w-full gap-8 text-sm`}>
+                                <Link page="Início" to="/" />
                                 <Link page="Acervo" to="/books" />
                                 {isLoggedIn && <Link page="Empréstimos" to="/loans" />}
                                 {canAccessUsers && <Link page="Usuários" to="/users" />}
@@ -70,6 +76,7 @@ const Navbar = () => {
 
                     {/* MENU ITEMS */}
                     <div className="ml-[33%] flex flex-col gap-1 text-2xl">
+                        <Link page="Início" to="/" />
                         <Link page="Acervo" to="/books" />
                         {isLoggedIn && <Link page="Empréstimos" to="/loans" />}
                         {canAccessUsers && <Link page="Usuários" to="/users" />}

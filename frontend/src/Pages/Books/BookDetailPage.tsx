@@ -7,6 +7,7 @@ import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
 import { useAuth } from '../../context/AuthContext';
 import { useBorrowForSelf } from '../../hooks/Loan/useBorrowForSelf';
 import { useDeleteBook } from '../../hooks/Book/useDeleteBook';
+import { logError } from '../../shared/utils/logger';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,18 +15,19 @@ const BookDetailPage = () => {
   const { book, loading, error, refetch } = useBookDetail(id || '');
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { hasRole, isLoggedIn } = useAuth();
+  const { hasRole, isLoggedIn, user } = useAuth();
   const { borrowBook, loading: borrowing } = useBorrowForSelf();
   const { deleteBook, loading: deleting } = useDeleteBook();
   
   const canLoanBooks = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
+  const hasNoRoles = isLoggedIn && (!user?.roles || user.roles.length === 0);
 
   const handleBorrowForSelf = async () => {
     try {
       await borrowBook(parseInt(id || '0'));
       refetch();
     } catch (err) {
-      console.error('Error borrowing book:', err);
+      logError('Error borrowing book:', err);
     }
   };
 
@@ -35,13 +37,16 @@ const BookDetailPage = () => {
       setIsDeleteModalOpen(false);
       navigate('/books');
     } catch (err) {
-      console.error('Error deleting book:', err);
+      logError('Error deleting book:', err);
     }
   };
 
   const getTooltipMessage = () => {
     if (!isLoggedIn) {
       return 'Você precisa estar autenticado para pegar emprestado';
+    }
+    if (hasNoRoles) {
+      return 'Você precisa de permissões para pegar livros emprestados';
     }
     if (book?.borrowedByCurrentUser) {
       return 'Você já possui este livro emprestado';
@@ -52,7 +57,7 @@ const BookDetailPage = () => {
     return '';
   };
 
-  const isBorrowDisabled = !isLoggedIn || book?.borrowedByCurrentUser || book?.availableCopies === 0;
+  const isBorrowDisabled = !isLoggedIn || hasNoRoles || book?.borrowedByCurrentUser || book?.availableCopies === 0;
 
   if (loading) {
     return (

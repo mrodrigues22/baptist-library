@@ -1,3 +1,13 @@
 # https://www.robotstxt.org/robotstxt.html
+# Baptist Library - Robots.txt
+# This is an internal library management system
+
 User-agent: *
-Disallow:
+Disallow: /
+
+# Prevent indexing of login and user-sensitive pages
+Disallow: /login
+Disallow: /users
+Disallow: /my-account
+Disallow: /loans
+Disallow: /settings

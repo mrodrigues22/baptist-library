@@ -36,6 +36,7 @@ namespace Api.Controllers
                     Email = registerDto.Email,
                     FirstName = registerDto.FirstName,
                     LastName = registerDto.LastName,
+                    PhoneNumber = registerDto.PhoneNumber,
                     Active = true
                 };
 

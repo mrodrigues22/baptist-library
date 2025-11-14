@@ -5,6 +5,7 @@ import { useUserLoans } from '../../hooks/Loan/useUserLoans';
 import Spinner from '../../components/layout/Spinner';
 import { useAuth } from '../../context/AuthContext';
 import { useUpdateUser, UpdateUserFormData } from '../../hooks/User/useUpdateUser';
+import { useAssignRole } from '../../hooks/User/useAssignRole';
 import { formatBrazilianPhone, validateBrazilianPhone, validateEmail } from '../../shared/utils/validation';
 
 const UserDetailPage = () => {
@@ -17,6 +18,10 @@ const UserDetailPage = () => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const { updateUser, loading: updateLoading, error: updateError, success: updateSuccess } = useUpdateUser();
+  const { assignRole, loading: assignRoleLoading, error: assignRoleError } = useAssignRole();
+  const [isChangingRole, setIsChangingRole] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [roleChangeSuccess, setRoleChangeSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState<UpdateUserFormData>({
     firstName: '',
     lastName: '',
@@ -79,6 +84,32 @@ const UserDetailPage = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRoleChange = async () => {
+    if (!user || !selectedRole) return;
+    setRoleChangeSuccess(null);
+    try {
+      await assignRole(user.id, selectedRole);
+      await refetch();
+      setRoleChangeSuccess(`Perfil alterado para ${selectedRole} com sucesso!`);
+      setIsChangingRole(false);
+      setSelectedRole('');
+      setTimeout(() => setRoleChangeSuccess(null), 5000);
+    } catch (err: any) {
+      // Error is handled by the hook
+    }
+  };
+
+  const beginRoleChange = () => {
+    setIsChangingRole(true);
+    setRoleChangeSuccess(null);
+    setSelectedRole(user?.roles[0] || '');
+  };
+
+  const cancelRoleChange = () => {
+    setIsChangingRole(false);
+    setSelectedRole('');
   };
   
   const canManageUsers = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
@@ -291,6 +322,90 @@ const UserDetailPage = () => {
               )}
             </div>
           </div>
+
+          {/* Role Management Card */}
+          {canManageUsers && assignableRoles.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Gerenciar Perfil</h2>
+                {!isChangingRole && (
+                  <button
+                    onClick={beginRoleChange}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  >
+                    Alterar perfil
+                  </button>
+                )}
+              </div>
+
+              {roleChangeSuccess && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm mb-4">
+                  {roleChangeSuccess}
+                </div>
+              )}
+
+              {assignRoleError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mb-4">
+                  {assignRoleError}
+                </div>
+              )}
+
+              {!isChangingRole ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Perfil Atual</label>
+                  <div className="flex flex-wrap gap-2">
+                    {user.roles && user.roles.length > 0 ? (
+                      user.roles.map((role, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                        >
+                          {role}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-sm">Nenhum perfil atribuído</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Selecionar Novo Perfil
+                  </label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                    disabled={assignRoleLoading}
+                  >
+                    <option value="">Selecione um perfil</option>
+                    {assignableRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={cancelRoleChange}
+                      disabled={assignRoleLoading}
+                      className="text-gray-600 hover:text-gray-800 font-medium text-sm disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleRoleChange}
+                      disabled={assignRoleLoading || !selectedRole}
+                      className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {assignRoleLoading ? 'Alterando...' : 'Confirmar alteração'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           
           {/* Loan History */}
