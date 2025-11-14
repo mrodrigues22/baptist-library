@@ -1,12 +1,12 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
-import BooksPage from './Pages/BooksPage';
-import BookDetailPage from './Pages/BookDetailPage';
-import LoansPage from './Pages/LoansPage';
-import UsersPage from './Pages/UsersPage';
-import SettingsPage from './Pages/SettingsPage';
-import MyAccountPage from './Pages/MyAccountPage';
+import BooksPage from './Pages/Books/BooksPage';
+import BookDetailPage from './Pages/Books/BookDetailPage';
+import LoansPage from './Pages/Loans/LoansPage';
+import UsersPage from './Pages/Users/UsersPage';
+import SettingsPage from './Pages/MyAccount/SettingsPage';
+import MyAccountPage from './Pages/MyAccount/MyAccountPage';
 import LoginPage from './Pages/LoginPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';

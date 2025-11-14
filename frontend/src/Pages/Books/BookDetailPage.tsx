@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useBookDetail } from '../hooks/Book/useBookDetail';
-import Spinner from '../components/layout/Spinner';
-import LoanBookModal from '../components/LoanBookModal';
-import { useAuth } from '../context/AuthContext';
-import { useBorrowForSelf } from '../hooks/Loan/useBorrowForSelf';
+import { useBookDetail } from '../../hooks/Book/useBookDetail';
+import Spinner from '../../components/layout/Spinner';
+import LoanBookModal from '../../components/LoanBookModal';
+import { useAuth } from '../../context/AuthContext';
+import { useBorrowForSelf } from '../../hooks/Loan/useBorrowForSelf';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();

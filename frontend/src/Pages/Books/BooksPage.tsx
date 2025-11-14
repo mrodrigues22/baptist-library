@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useBooks } from '../hooks/Book/useBooks';
-import { useCategories } from '../hooks/Category/useCategories';
-import Spinner from '../components/layout/Spinner';
-import BookList from '../components/bookList/bookList';
-import BookFilters from '../components/bookFilters/BookFilters';
+import { useBooks } from '../../hooks/Book/useBooks';
+import { useCategories } from '../../hooks/Category/useCategories';
+import Spinner from '../../components/layout/Spinner';
+import BookList from '../../components/bookList/bookList';
+import BookFilters from '../../components/bookFilters/BookFilters';
 
 
 const BooksPage = () => {
