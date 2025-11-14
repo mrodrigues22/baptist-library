@@ -3,16 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useBookDetail } from '../../hooks/Book/useBookDetail';
 import Spinner from '../../components/layout/Spinner';
 import LoanBookModal from '../../components/LoanBookModal';
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
 import { useAuth } from '../../context/AuthContext';
 import { useBorrowForSelf } from '../../hooks/Loan/useBorrowForSelf';
+import { useDeleteBook } from '../../hooks/Book/useDeleteBook';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { book, loading, error, refetch } = useBookDetail(id || '');
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { hasRole } = useAuth();
   const { borrowBook, loading: borrowing } = useBorrowForSelf();
+  const { deleteBook, loading: deleting } = useDeleteBook();
   
   const canLoanBooks = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
 
@@ -22,6 +26,16 @@ const BookDetailPage = () => {
       refetch();
     } catch (err) {
       console.error('Error borrowing book:', err);
+    }
+  };
+
+  const handleDeleteBook = async () => {
+    try {
+      await deleteBook(id || '');
+      setIsDeleteModalOpen(false);
+      navigate('/books');
+    } catch (err) {
+      console.error('Error deleting book:', err);
     }
   };
 
@@ -116,20 +130,36 @@ const BookDetailPage = () => {
               </div>
             </div>
             {canLoanBooks && (
-              <button
-                onClick={() => navigate(`/books/${id}/edit`)}
-                className="ml-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors duration-200 flex items-center gap-2"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-5 w-5" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
+              <div className="ml-4 flex gap-2">
+                <button
+                  onClick={() => navigate(`/books/${id}/edit`)}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors duration-200 flex items-center gap-2"
                 >
-                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
-                Editar
-              </button>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-5 w-5" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  Editar
+                </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors duration-200 flex items-center gap-2"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-5 w-5" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Deletar
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -403,6 +433,16 @@ const BookDetailPage = () => {
         onSuccess={() => {
           refetch();
         }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteBook}
+        title="Confirmar exclusão"
+        message={`Tem certeza que deseja deletar o livro "${book.title}"? Esta ação não pode ser desfeita.`}
+        loading={deleting}
       />
     </div>
   );
