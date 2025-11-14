@@ -52,77 +52,57 @@ const HomePage = () => {
         
         <div className="bg-white rounded-lg shadow-2xl p-3">
           <form onSubmit={handleSearch}>
-            <div className="space-y-2">
-              {/* Search Input and Category Filter */}
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Buscar por título, autor, categoria..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-2 py-2.5 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Buscar por título, autor, categoria..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-2 py-2.5 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {categoriesLoading ? (
+                <div className="flex items-center px-4">
+                  <Spinner size={24} />
+                </div>
+              ) : (
+                <div className="w-56">
+                  <SearchableSelect
+                    id="category-home"
+                    value={categoryId || ''}
+                    onChange={handleCategoryChange}
+                    options={[
+                      { value: '', label: 'Categorias' },
+                      ...categories.map(cat => ({
+                        value: cat.id,
+                        label: cat.description || cat.name
+                      }))
+                    ]}
+                    placeholder="Selecione uma categoria"
+                    className="w-full"
                   />
                 </div>
+              )}
 
-                {categoriesLoading ? (
-                  <div className="flex items-center px-4">
-                    <Spinner size={24} />
-                  </div>
-                ) : (
-                  <div className="w-56">
-                    <SearchableSelect
-                      id="category-home"
-                      value={categoryId || ''}
-                      onChange={handleCategoryChange}
-                      options={[
-                        { value: '', label: 'Todas as categorias' },
-                        ...categories.map(cat => ({
-                          value: cat.id,
-                          label: cat.description || cat.name
-                        }))
-                      ]}
-                      placeholder="Selecione uma categoria"
-                      className="w-full"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Search Button */}
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className="flex-1 bg-primary hover:bg-secondary text-white font-medium py-2.5 px-4 rounded-md transition-colors duration-200"
-                >
-                  Buscar Livros
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/books')}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 rounded-md transition-colors duration-200"
-                >
-                  Ver Acervo
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="bg-primary hover:bg-secondary text-white font-medium py-2.5 px-6 rounded-md transition-colors duration-200 whitespace-nowrap"
+              >
+                Buscar
+              </button>
             </div>
           </form>
         </div>
 
         {/* Quick Links */}
-        <div className="mt-8 flex justify-center gap-6 text-white">
+        <div className="mt-2 flex justify-center gap-6 text-white">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/books')}
             className="hover:underline text-lg drop-shadow"
           >
-            Entrar
-          </button>
-          <span className="text-lg">•</span>
-          <button
-            onClick={() => navigate('/register')}
-            className="hover:underline text-lg drop-shadow"
-          >
-            Cadastrar
+            Ver todos os livros
           </button>
         </div>
       </div>

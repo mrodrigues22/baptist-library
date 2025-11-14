@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
 import HomePage from './Pages/Home/HomePage';
 import BooksPage from './Pages/Books/BooksPage';
 import BookDetailPage from './Pages/Books/BookDetailPage';
@@ -27,15 +28,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <div className="app">
+    <div className="app flex flex-col min-h-screen">
       <Navbar />
       {isHomePage ? (
-        children
+        <div className="flex-grow">{children}</div>
       ) : (
-        <main className="pt-20 pb-20 mx-auto w-5/6">
+        <main className="pt-20 pb-20 mx-auto w-5/6 flex-grow">
           {children}
         </main>
       )}
+      <Footer />
     </div>
   );
 };
