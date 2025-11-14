@@ -305,7 +305,7 @@ const BookDetailPage = () => {
         {book.loans && book.loans.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Empréstimos Ativos
+              Empréstimos
             </h2>
             <div className="bg-gray-50 rounded-lg overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
@@ -324,7 +324,11 @@ const BookDetailPage = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {book.loans.map((loan) => (
-                    <tr key={loan.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={loan.id} 
+                      onClick={() => navigate(`/loans/${loan.id}`)}
+                      className="hover:bg-gray-50 cursor-pointer"
+                    >
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {loan.reader}
                       </td>
@@ -333,11 +337,13 @@ const BookDetailPage = () => {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          loan.status === 'Emprestado' 
+                          loan.status === 'Aguardando devolução' 
                             ? 'bg-yellow-100 text-yellow-800'
                             : loan.status === 'Aguardando retirada'
                             ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
+                            : loan.status === 'Atrasado'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
                         }`}>
                           {loan.status}
                         </span>
