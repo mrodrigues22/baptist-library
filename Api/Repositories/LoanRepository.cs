@@ -209,5 +209,15 @@ namespace Api.Repository
             var createdLoan = await GetLoanAsync(loan.Id, cancellationToken);
             return (true, null, createdLoan);
         }
+
+        public async Task<List<Loan>> GetLoansByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Loans
+                .Include(l => l.RequesterUser)
+                .Include(l => l.Status)
+                .Where(l => l.BookId == bookId)
+                .OrderByDescending(l => l.RequestDate)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

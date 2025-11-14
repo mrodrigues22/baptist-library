@@ -17,5 +17,6 @@ namespace Api.Interfaces
         Task<Loan?> CheckOut(int id, string userId, CancellationToken cancellationToken = default);
         Task<Loan?> ReturnBook(int id, string userId, CancellationToken cancellationToken = default);
         Task<(bool Success, string? ErrorMessage, Loan? Loan)> BorrowBookWithValidationAsync(int bookId, string userId, CancellationToken cancellationToken = default);
+        Task<List<Loan>> GetLoansByBookIdAsync(int bookId, CancellationToken cancellationToken = default);
     }
 }

@@ -156,5 +156,14 @@ namespace Api.Controllers
 
             return CreatedAtAction(nameof(GetLoanById), new { id = result.Loan!.Id }, result.Loan.ToLoanDetailDto());
         }
+
+        [HttpGet("book/{bookId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLoansByBookId(int bookId, CancellationToken cancellationToken)
+        {
+            var loans = await _loanRepository.GetLoansByBookIdAsync(bookId, cancellationToken);
+            var loanSummaries = loans.Select(l => l.ToBookLoanSummaryDto());
+            return Ok(loanSummaries);
+        }
     }
 }

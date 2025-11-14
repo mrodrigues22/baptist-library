@@ -67,5 +67,16 @@ namespace Library.Api.Mappers
                 StatusId = 2
             };
         }
+
+        public static BookLoanSummaryDto ToBookLoanSummaryDto(this Loan loan)
+        {
+            return new BookLoanSummaryDto
+            {
+                Id = loan.Id,
+                Reader = loan.RequesterUser?.FirstName + " " + loan.RequesterUser?.LastName ?? "Unknown",
+                CheckoutDate = loan.CheckoutDate,
+                Status = loan.Status.Description
+            };
+        }
     }
 }
