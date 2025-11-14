@@ -10,7 +10,7 @@ import LoanDetailPage from './Pages/Loans/LoanDetailPage';
 import UsersPage from './Pages/Users/UsersPage';
 import CreateUserPage from './Pages/Users/CreateUserPage';
 import UserDetailPage from './Pages/Users/UserDetailPage';
-import SettingsPage from './Pages/MyAccount/SettingsPage';
+import SettingsPage from './Pages/Settings/SettingsPage';
 import MyAccountPage from './Pages/MyAccount/MyAccountPage';
 import LoginPage from './Pages/LoginPage';
 import { AuthProvider } from './context/AuthContext';
