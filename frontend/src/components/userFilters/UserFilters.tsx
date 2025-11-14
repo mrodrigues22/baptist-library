@@ -22,38 +22,28 @@ const UserFilters: React.FC<UserFiltersProps> = ({ filters, onFiltersChange }) =
     }
   };
 
-  const handleActiveFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleRoleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    if (value === 'all') {
-      onFiltersChange({ ...filters, activeOnly: undefined });
-    } else if (value === 'active') {
-      onFiltersChange({ ...filters, activeOnly: true });
-    } else if (value === 'inactive') {
-      onFiltersChange({ ...filters, activeOnly: false });
-    }
+    onFiltersChange({ ...filters, roleFilter: value === 'all' ? undefined : value });
   };
 
   const handleClearFilters = () => {
-    onFiltersChange({ activeOnly: true });
+    onFiltersChange({});
   };
 
   const currentSortValue = filters.sortBy 
     ? (filters.descending ? `-${filters.sortBy}` : filters.sortBy)
     : '';
 
-  const currentActiveFilter = filters.activeOnly === undefined 
-    ? 'all' 
-    : filters.activeOnly 
-    ? 'active' 
-    : 'inactive';
+  const currentRoleFilter = filters.roleFilter || 'all';
 
-  const hasActiveFilters = filters.filter || filters.sortBy || filters.activeOnly === false;
+  const hasActiveFilters = filters.filter || filters.sortBy || filters.roleFilter;
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Search */}
-        <div>
+        <div className="md:col-span-2">
           <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
             Buscar
           </label>
@@ -67,20 +57,21 @@ const UserFilters: React.FC<UserFiltersProps> = ({ filters, onFiltersChange }) =
           />
         </div>
 
-        {/* Active Status Filter */}
+        {/* Role Filter */}
         <div>
-          <label htmlFor="activeFilter" className="block text-sm font-medium text-gray-700 mb-1">
-            Status
+          <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 mb-1">
+            Função
           </label>
           <select
-            id="activeFilter"
-            value={currentActiveFilter}
-            onChange={handleActiveFilterChange}
+            id="roleFilter"
+            value={currentRoleFilter}
+            onChange={handleRoleFilterChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Todos</option>
-            <option value="active">Ativos</option>
-            <option value="inactive">Inativos</option>
+            <option value="all">Todas</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Bibliotecário">Bibliotecário</option>
+            <option value="Membro">Membro</option>
           </select>
         </div>
 

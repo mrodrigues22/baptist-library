@@ -40,7 +40,7 @@ export interface UsersFilters {
   descending?: boolean;
   pageNumber?: number;
   pageSize?: number;
-  activeOnly?: boolean;
+  roleFilter?: string;
 }
 
 interface UseUsersResult {
@@ -70,7 +70,7 @@ export function useUsers(): UseUsersResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState(0);
-  const [filters, setFiltersState] = useState<UsersFilters>({ activeOnly: true });
+  const [filters, setFiltersState] = useState<UsersFilters>({});
   const [hasPendingUsers, setHasPendingUsers] = useState(false);
 
   useEffect(() => {
@@ -111,11 +111,9 @@ export function useUsers(): UseUsersResult {
         const userItems = Array.isArray(data.users) ? data.users : [];
         let processedUsers = userItems.map(normalizeItem);
         
-        // Apply active filter on client side if needed
-        if (filters.activeOnly === true) {
-          processedUsers = processedUsers.filter((u: User) => u.active);
-        } else if (filters.activeOnly === false) {
-          processedUsers = processedUsers.filter((u: User) => !u.active);
+        // Apply role filter on client side if needed
+        if (filters.roleFilter && filters.roleFilter !== 'all') {
+          processedUsers = processedUsers.filter((u: User) => u.role === filters.roleFilter);
         }
         
         setUsers(processedUsers);
