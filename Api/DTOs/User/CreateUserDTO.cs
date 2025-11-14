@@ -21,6 +21,7 @@ namespace Api.DTOs.User
         [MinLength(8, ErrorMessage = "A senha deve ter no mínimo 8 caracteres")]
         public string Password { get; set; } = string.Empty;
 
-        public string? RoleName { get; set; }
+        [Required(ErrorMessage = "A função é obrigatória")]
+        public string RoleName { get; set; } = string.Empty;
     }
 }
