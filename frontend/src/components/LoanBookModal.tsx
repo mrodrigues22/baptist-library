@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { authenticatedPost } from '../shared/apiUtils';
-import { useUserSearch } from '../hooks/useUserSearch';
+import { useUserSearch } from '../hooks/User/useUserSearch';
+import { useCreateLoan } from '../hooks/Loan/useCreateLoan';
 
 interface User {
   id: string;
@@ -30,19 +30,17 @@ const LoanBookModal: React.FC<LoanBookModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Use the custom hook for user search
+  // Use custom hooks
   const { users: filteredUsers, loading, error: searchError } = useUserSearch(searchTerm, isOpen);
+  const { createLoan, loading: submitting, error } = useCreateLoan();
 
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setSearchTerm('');
       setSelectedUser(null);
-      setError(null);
     }
   }, [isOpen]);
 
@@ -68,26 +66,20 @@ const LoanBookModal: React.FC<LoanBookModalProps> = ({
     e.preventDefault();
     
     if (!selectedUser) {
-      setError('Por favor, selecione um usuário');
       return;
     }
 
-    setSubmitting(true);
-    setError(null);
-
     try {
-      await authenticatedPost('/loans', {
+      await createLoan({
         bookId: bookId,
         requesterUserId: selectedUser.id,
       });
       
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Erro ao criar empréstimo');
+    } catch (err) {
+      // Error is handled by the hook
       console.error('Error creating loan:', err);
-    } finally {
-      setSubmitting(false);
     }
   };
 

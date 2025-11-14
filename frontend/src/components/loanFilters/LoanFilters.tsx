@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoansFilters } from '../../hooks/useLoans';
+import { LoansFilters } from '../../hooks/Loan/useLoans';
 
 interface LoanFiltersProps {
   filters: LoansFilters;

@@ -1,6 +1,6 @@
 import React from 'react';
-import { BooksFilters } from '../../hooks/useBooks';
-import { Category } from '../../hooks/useCategories';
+import { BooksFilters } from '../../hooks/Book/useBooks';
+import { Category } from '../../hooks/Category/useCategories';
 import SearchableSelect from '../SearchableSelect/SearchableSelect';
 
 interface BookFiltersProps {

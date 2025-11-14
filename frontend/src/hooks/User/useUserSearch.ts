@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { authenticatedGet } from '../shared/apiUtils';
+import { authenticatedGet } from '../../shared/apiUtils';
 
 interface User {
   id: string;

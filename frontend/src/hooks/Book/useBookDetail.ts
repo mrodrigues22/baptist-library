@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import AuthService from '../services/AuthService';
+import AuthService from '../../services/AuthService';
 
 const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
 

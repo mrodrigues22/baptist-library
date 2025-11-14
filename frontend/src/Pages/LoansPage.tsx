@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLoans } from '../hooks/useLoans';
+import { useLoans } from '../hooks/Loan/useLoans';
 import Spinner from '../components/layout/Spinner';
 import LoanList from '../components/loanList/LoanList';
 import LoanFilters from '../components/loanFilters/LoanFilters';
