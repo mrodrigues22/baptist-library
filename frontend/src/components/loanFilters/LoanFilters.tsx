@@ -66,7 +66,7 @@ const LoanFilters: React.FC<LoanFiltersProps> = ({ filters, onFiltersChange }) =
           </label>
           <Select
             id="status"
-            value={filters.status !== undefined ? filters.status : ''}
+            value={filters.status !== undefined ? String(filters.status) : ''}
             onChange={handleStatusChange}
             options={[
               { value: '', label: 'Todos' },
