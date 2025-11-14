@@ -10,6 +10,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
+  isLoading: boolean;
   login: (token: string) => void;
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
@@ -32,6 +33,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Parse JWT token to extract user information
   const parseJwt = (token: string): any => {
@@ -74,6 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoggedIn(true);
       }
     }
+    setIsLoading(false);
   }, []);
 
   const login = (token: string) => {
@@ -110,7 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, isLoading, login, logout, hasRole }}>
       {children}
     </AuthContext.Provider>
   );

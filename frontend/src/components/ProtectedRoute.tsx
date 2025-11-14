@@ -13,7 +13,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = false, 
   requiredRoles = [] 
 }) => {
-  const { isLoggedIn, hasRole } = useAuth();
+  const { isLoggedIn, isLoading, hasRole } = useAuth();
+
+  // Wait for auth to finish loading before redirecting
+  if (isLoading) {
+    return null; // Or you could return a loading spinner here
+  }
 
   // If authentication is required but user is not logged in
   if (requireAuth && !isLoggedIn) {
