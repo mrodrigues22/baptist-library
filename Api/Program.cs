@@ -3,6 +3,7 @@ using Api.Interfaces;
 using Api.Repositories;
 using Api.Repository;
 using Api.Services;
+using AspNetCoreRateLimit;
 using Library.Api.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -42,6 +43,33 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+
+// Configure CORS with specific origins for production
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevelopmentPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+    
+    options.AddPolicy("ProductionPolicy", policy =>
+    {
+        // TODO: Replace with your actual frontend domain(s)
+        policy.WithOrigins("https://bibliotecapib.com.br")
+              .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH")
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+// Configure Rate Limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -97,14 +125,51 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Force HTTPS
 app.UseHttpsRedirection();
 
-app.UseCors(x => x
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials()
-    //.WithOrigins("http://localhost:3000")
-    .SetIsOriginAllowed(origin => true));
+// Add HSTS in production for enhanced security
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+// Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    // Prevent MIME type sniffing
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    
+    // Prevent clickjacking attacks
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    
+    // Enable XSS protection
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    
+    // Control referrer information
+    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+    
+    // Content Security Policy
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none';");
+    
+    // Permissions Policy (formerly Feature-Policy)
+    context.Response.Headers.Append("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    
+    await next();
+});
+
+// Rate Limiting - Must be before UseCors
+app.UseIpRateLimiting();
+
+// CORS - Use environment-specific policy
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevelopmentPolicy");
+}
+else
+{
+    app.UseCors("ProductionPolicy");
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
