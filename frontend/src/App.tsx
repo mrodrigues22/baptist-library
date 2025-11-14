@@ -9,6 +9,7 @@ import LoansPage from './Pages/Loans/LoansPage';
 import LoanDetailPage from './Pages/Loans/LoanDetailPage';
 import UsersPage from './Pages/Users/UsersPage';
 import CreateUserPage from './Pages/Users/CreateUserPage';
+import UserDetailPage from './Pages/Users/UserDetailPage';
 import SettingsPage from './Pages/MyAccount/SettingsPage';
 import MyAccountPage from './Pages/MyAccount/MyAccountPage';
 import LoginPage from './Pages/LoginPage';
@@ -72,6 +73,14 @@ function App() {
                 element={
                   <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
                     <CreateUserPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/users/:id" 
+                element={
+                  <ProtectedRoute requiredRoles={['Administrador', 'Desenvolvedor', 'Bibliotecário']}>
+                    <UserDetailPage />
                   </ProtectedRoute>
                 } 
               />
