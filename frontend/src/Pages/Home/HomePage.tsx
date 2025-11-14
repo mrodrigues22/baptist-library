@@ -33,7 +33,7 @@ const HomePage = () => {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center relative"
+      className="h-screen flex items-center justify-center relative overflow-hidden"
       style={{
         backgroundImage: 'url(/hero-image.jpg)',
         backgroundSize: 'cover',
@@ -46,13 +46,13 @@ const HomePage = () => {
       
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-3xl w-full">
-        <div className="mb-8 flex justify-center">
-          <img src="/logo-white.svg" alt="Biblioteca Batista" className="h-16 md:h-20 drop-shadow-2xl" />
+        <div className="mb-6 flex justify-center">
+          <img src="/logo-white.svg" alt="Biblioteca Batista" className="h-14 md:h-16 drop-shadow-2xl" />
         </div>
         
         <div className="bg-white rounded-lg shadow-2xl p-3">
           <form onSubmit={handleSearch}>
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2">
               <div className="flex-1">
                 <input
                   type="text"
@@ -64,11 +64,11 @@ const HomePage = () => {
               </div>
 
               {categoriesLoading ? (
-                <div className="flex items-center px-4">
+                <div className="flex items-center justify-center px-4">
                   <Spinner size={24} />
                 </div>
               ) : (
-                <div className="w-56">
+                <div className="w-full md:w-56">
                   <SearchableSelect
                     id="category-home"
                     value={categoryId || ''}
@@ -97,10 +97,10 @@ const HomePage = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="mt-2 flex justify-center gap-6 text-white">
+        <div className="mt-4 flex justify-center gap-6 text-white">
           <button
             onClick={() => navigate('/books')}
-            className="hover:underline text-lg drop-shadow"
+            className="hover:underline text-base md:text-lg drop-shadow"
           >
             Ver todos os livros
           </button>
