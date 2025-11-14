@@ -14,7 +14,9 @@ namespace Library.Api.Mappers
                 Book = loan.Book.Title,
                 Reader = loan.RequesterUser?.FirstName + " " + loan.RequesterUser?.LastName ?? "Unknown",
                 RequestDate = loan.RequestDate,
-                Status = loan.Status.Description
+                Status = loan.Status.Description,
+                ExpectedReturnDate = loan.ExpectedReturnDate,
+                ReturnDate = loan.ReturnDate
             };
         }
 

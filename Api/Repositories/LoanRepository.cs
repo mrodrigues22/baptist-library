@@ -113,8 +113,21 @@ namespace Api.Repository
                 return null;
             }
 
+            // Get loan duration from settings (assuming setting ID 2 is for loan duration in days)
+            var loanDurationDays = await _context.Settings
+                .Where(s => s.Id == 2)
+                .Select(s => s.Value)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // Default to 14 days if setting not found
+            if (loanDurationDays == 0)
+            {
+                loanDurationDays = 14;
+            }
+
             loan.StatusId = 2;
             loan.CheckoutDate = DateTime.UtcNow;
+            loan.ExpectedReturnDate = DateTime.UtcNow.AddDays(loanDurationDays);
             loan.CheckedOutBy = userId;
             await _context.SaveChangesAsync(cancellationToken);
 

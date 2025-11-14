@@ -7,5 +7,7 @@ namespace Library.Api.DTOs.Loan
         public required string Reader { get; set; }
         public DateTime RequestDate { get; set; }
         public required string Status { get; set; }
+        public DateTime? ExpectedReturnDate { get; set; }
+        public DateTime? ReturnDate { get; set; }
     }
 }
