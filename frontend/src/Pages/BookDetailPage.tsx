@@ -3,12 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useBookDetail } from '../hooks/Book/useBookDetail';
 import Spinner from '../components/layout/Spinner';
 import LoanBookModal from '../components/LoanBookModal';
+import { useAuth } from '../context/AuthContext';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { book, loading, error, refetch } = useBookDetail(id || '');
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const { hasRole } = useAuth();
+  
+  const canLoanBooks = hasRole(['Administrador', 'Bibliotecario', 'Developer']);
 
   if (loading) {
     return (
@@ -177,8 +181,8 @@ const BookDetailPage = () => {
             </div>
           )}
           
-          {/* Loan button */}
-          {book.availableCopies > 0 && (
+          {/* Loan button - Only visible for Administrador, Bibliotecario, and Developer */}
+          {book.availableCopies > 0 && canLoanBooks && (
             <div className="mt-4">
               <button
                 onClick={() => setIsLoanModalOpen(true)}
