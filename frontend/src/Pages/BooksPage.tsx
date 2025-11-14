@@ -22,7 +22,9 @@ const BooksPage = () => {
       <div className="text-sm text-gray-500 mb-4">
         {meta.totalTitles !== null && meta.totalCopies !== null && (
           <span>
-            Títulos: {meta.totalTitles} • Exemplares: {meta.totalCopies}
+            Títulos: {meta.totalTitles}
+            <br />
+            Exemplares: {meta.totalCopies}
           </span>
         )}
       </div>
