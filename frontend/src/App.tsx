@@ -1,8 +1,9 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/layout/Navbar';
+import HomePage from './Pages/Home/HomePage';
 import BooksPage from './Pages/Books/BooksPage';
 import BookDetailPage from './Pages/Books/BookDetailPage';
 import CreateBookPage from './Pages/Books/CreateBookPage';
@@ -21,16 +22,32 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
+  return (
+    <div className="app">
+      <Navbar />
+      {isHomePage ? (
+        children
+      ) : (
+        <main className="pt-20 pb-20 mx-auto w-5/6">
+          {children}
+        </main>
+      )}
+    </div>
+  );
+};
+
 function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
         <Router>
-          <div className="app">
-            <Navbar />
-            <main className="pt-20 pb-20 mx-auto w-5/6">
-              <Routes>
-              <Route path="/" element={<Navigate to="/books" replace />} />
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/books" element={<BooksPage />} />
@@ -116,22 +133,21 @@ function App() {
                 } 
               />
             </Routes>
-          </main>
-        </div>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </Router>
-    </AuthProvider>
-  </ErrorBoundary>
+          </Layout>
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

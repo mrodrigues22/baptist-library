@@ -16,11 +16,11 @@ const Navbar = () => {
 
     return (
         <nav>
-            <div className={`${flexBetween} fixed top-0 z-30 w-full py-6 bg-white shadow-md`}>
+            <div className={`${flexBetween} fixed top-0 z-30 w-full py-2 bg-light shadow-md`}>
                 <div className={`${flexBetween} mx-auto w-5/6`}>
                     {/* LEFT SIDE */}
                     <div className={`${flexBetween} w-full`}>
-                        <img src="/logo-min.svg" className="h-15" alt="Logo" />
+                        <img src="/logo-min.svg" className="h-12" alt="Logo" />
                     </div>
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (
