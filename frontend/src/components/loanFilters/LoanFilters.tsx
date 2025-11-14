@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoansFilters } from '../../hooks/Loan/useLoans';
+import { LoansFilters } from '../../shared/types';
 import Select from '../Select/Select';
 
 interface LoanFiltersProps {

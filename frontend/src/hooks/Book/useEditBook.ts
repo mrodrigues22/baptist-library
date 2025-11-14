@@ -1,6 +1,6 @@
 import { useState } from 'react';
-
-const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
+import { authenticatedPut } from '../../shared/apiUtils';
+import { API_ENDPOINTS } from '../../shared/api/config';
 
 export interface EditBookFormData {
   title: string;
@@ -36,11 +36,6 @@ export function useEditBook(): UseEditBookResult {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Você precisa estar autenticado para editar um livro.');
-      }
-
       // Filter out empty author names
       const filteredAuthors = formData.authorNames.filter(name => name.trim() !== '');
       if (filteredAuthors.length === 0) {
@@ -63,20 +58,7 @@ export function useEditBook(): UseEditBookResult {
         categories: formData.categories
       };
 
-      const response = await fetch(`${API_BASE}/books/${bookId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Erro HTTP ${response.status}`);
-      }
-
+      await authenticatedPut(API_ENDPOINTS.BOOK_DETAIL(parseInt(bookId)), payload);
       setSuccess(true);
 
     } catch (err: any) {

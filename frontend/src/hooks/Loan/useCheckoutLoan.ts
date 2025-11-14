@@ -1,6 +1,6 @@
 import { useState } from 'react';
-
-const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
+import { authenticatedPatch } from '../../shared/apiUtils';
+import { API_ENDPOINTS } from '../../shared/api/config';
 
 interface UseCheckoutLoanResult {
   checkoutLoan: (loanId: number) => Promise<void>;
@@ -16,27 +16,8 @@ export function useCheckoutLoan(): UseCheckoutLoanResult {
     setLoading(true);
     setError(null);
 
-    const url = `${API_BASE}/loans/checkout/${loanId}`;
-    
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json'
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     try {
-      const response = await fetch(url, {
-        method: 'PATCH',
-        headers
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      await response.json();
+      await authenticatedPatch(API_ENDPOINTS.LOAN_CHECKOUT(loanId), {});
     } catch (err: any) {
       setError(err.message || 'Failed to checkout loan');
       throw err;

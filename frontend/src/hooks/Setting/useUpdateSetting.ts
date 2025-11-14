@@ -1,6 +1,6 @@
 import { useState } from 'react';
-
-const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
+import { authenticatedPut } from '../../shared/apiUtils';
+import { API_ENDPOINTS } from '../../shared/api/config';
 
 interface UseUpdateSettingResult {
   updateSetting: (settingId: number, value: number) => Promise<void>;
@@ -17,23 +17,7 @@ export function useUpdateSetting(): UseUpdateSettingResult {
     setError(null);
 
     try {
-      const token = localStorage.getItem('token');
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json'
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(`${API_BASE}/settings/${settingId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ value })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar configuração');
-      }
+      await authenticatedPut(API_ENDPOINTS.SETTING_DETAIL(settingId), { value });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar configuração';
       setError(errorMessage);

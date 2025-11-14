@@ -1,5 +1,5 @@
 import React from 'react';
-import { UsersFilters } from '../../hooks/User/useUsers';
+import { UsersFilters } from '../../shared/types';
 import Select from '../Select/Select';
 
 interface UserFiltersProps {

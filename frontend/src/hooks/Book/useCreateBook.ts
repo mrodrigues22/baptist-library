@@ -1,6 +1,6 @@
 import { useState } from 'react';
-
-const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
+import { authenticatedPost } from '../../shared/apiUtils';
+import { API_ENDPOINTS } from '../../shared/api/config';
 
 export interface CreateBookFormData {
   title: string;
@@ -36,11 +36,6 @@ export function useCreateBook(): UseCreateBookResult {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Você precisa estar autenticado para criar um livro.');
-      }
-
       // Filter out empty author names
       const filteredAuthors = formData.authorNames.filter(name => name.trim() !== '');
       if (filteredAuthors.length === 0) {
@@ -63,21 +58,7 @@ export function useCreateBook(): UseCreateBookResult {
         categories: formData.categories
       };
 
-      const response = await fetch(`${API_BASE}/books`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Erro HTTP ${response.status}`);
-      }
-
-      const createdBook = await response.json();
+      const createdBook = await authenticatedPost(API_ENDPOINTS.BOOKS, payload);
       setSuccess(true);
       return createdBook;
 

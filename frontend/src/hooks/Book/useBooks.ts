@@ -1,56 +1,6 @@
 import { useEffect, useState } from 'react';
-
-const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
-
-export interface Book {
-  id: number;
-  title: string;
-  authors: string[];
-  publisher: string;
-  publicationYear?: number;
-  edition?: number;
-  quantity: number;
-  availableCopies: number;
-  borrowedByCurrentUser: boolean;
-}
-
-interface BooksApiRawItem {
-  Id?: number;
-  Title?: string;
-  Authors?: string[];
-  Publisher?: string;
-  PublicationYear?: number;
-  Edition?: number;
-  AvailableCopies?: number;
-  Quantity?: number;
-  BorrowedByCurrentUser?: boolean;
-  id?: number;
-  title?: string;
-  authors?: string[];
-  publisher?: string;
-  publicationYear?: number;
-  edition?: number;
-  availableCopies?: number;
-  quantity?: number;
-  borrowedByCurrentUser?: boolean;
-}
-
-interface BooksApiResponse {
-  items?: BooksApiRawItem[];
-  totalTitles?: number;
-  totalCopies?: number;
-  pageNumber?: number;
-  pageSize?: number;
-}
-
-export interface BooksFilters {
-  searchTerm?: string;
-  categoryId?: number;
-  sortBy?: string;
-  descending?: boolean;
-  pageNumber?: number;
-  pageSize?: number;
-}
+import { Book, BooksFilters } from '../../shared/types';
+import { publicGet, getToken, normalizeToCamelCase } from '../../shared/apiUtils';
 
 interface UseBooksResult {
   books: Book[] | null;
@@ -64,20 +14,6 @@ interface UseBooksResult {
     totalCopies: number | null;
     pageNumber: number | null;
     pageSize: number | null;
-  };
-}
-
-function normalizeItem(raw: BooksApiRawItem): Book {
-  return {
-    id: raw.id ?? raw.Id ?? 0,
-    title: raw.title ?? raw.Title ?? '',
-    authors: raw.authors ?? raw.Authors ?? [],
-    publisher: raw.publisher ?? raw.Publisher ?? '',
-    publicationYear: raw.publicationYear ?? raw.PublicationYear,
-    edition: raw.edition ?? raw.Edition,
-    availableCopies: raw.availableCopies ?? raw.AvailableCopies ?? 0,
-    quantity: raw.quantity ?? raw.Quantity ?? 0,
-    borrowedByCurrentUser: raw.borrowedByCurrentUser ?? raw.BorrowedByCurrentUser ?? false
   };
 }
 
@@ -109,33 +45,38 @@ export function useBooks(): UseBooksResult {
     if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
     
     const queryString = params.toString();
-    const url = `${API_BASE}/books${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/books${queryString ? `?${queryString}` : ''}`;
     
-    fetch(url, { signal: controller.signal })
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: BooksApiResponse | BooksApiRawItem[] | any) => {
-        if (Array.isArray(data)) {
-          // Unexpected array root; normalize directly
-            setBooks(data.map(normalizeItem));
-            setMeta({ totalTitles: null, totalCopies: null, pageNumber: null, pageSize: null });
-            return;
+    // Use publicGet if no token, otherwise use authenticated version
+    const fetchFunc = getToken() ? publicGet : publicGet;
+    
+    fetchFunc(endpoint, controller.signal)
+      .then((data: any) => {
+        // Normalize response from PascalCase to camelCase
+        const normalized = normalizeToCamelCase(data);
+        
+        if (Array.isArray(normalized)) {
+          setBooks(normalized);
+          setMeta({ totalTitles: null, totalCopies: null, pageNumber: null, pageSize: null });
+          return;
         }
-        const items = Array.isArray(data.items) ? data.items : [];
-        setBooks(items.map(normalizeItem));
+        
+        const items = Array.isArray(normalized.items) ? normalized.items : [];
+        setBooks(items);
         setMeta({
-          totalTitles: data.totalTitles ?? null,
-          totalCopies: data.totalCopies ?? null,
-          pageNumber: data.pageNumber ?? null,
-          pageSize: data.pageSize ?? null
+          totalTitles: normalized.totalTitles ?? null,
+          totalCopies: normalized.totalCopies ?? null,
+          pageNumber: normalized.pageNumber ?? null,
+          pageSize: normalized.pageSize ?? null
         });
       })
       .catch(err => {
-        if (err.name !== 'AbortError') setError(err.message || 'Failed to load books');
+        if (err.name !== 'AbortError') {
+          setError(err.message || 'Failed to load books');
+        }
       })
       .finally(() => setLoading(false));
+    
     return () => controller.abort();
   }, [trigger, filters]);
 

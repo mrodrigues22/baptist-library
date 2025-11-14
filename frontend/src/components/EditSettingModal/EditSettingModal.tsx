@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useUpdateSetting } from '../../hooks/Setting/useUpdateSetting';
 
 interface EditSettingModalProps {
   settingId: number;
@@ -16,43 +17,24 @@ const EditSettingModal: React.FC<EditSettingModalProps> = ({
   onSuccess,
 }) => {
   const [value, setValue] = useState(currentValue.toString());
-  const [loading, setLoading] = useState(false);
+  const { updateSetting, loading, error: hookError } = useUpdateSetting();
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     const numValue = parseInt(value);
     if (isNaN(numValue)) {
       setError('Por favor, insira um número válido');
-      setLoading(false);
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const API_BASE = process.env.REACT_APP_API_BASE || '';
-      
-      const response = await fetch(`${API_BASE}/settings/${settingId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ value: numValue })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar configuração');
-      }
-
+      await updateSetting(settingId, numValue);
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar configuração');
-    } finally {
-      setLoading(false);
     }
   };
 

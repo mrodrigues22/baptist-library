@@ -1,5 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/layout/Navbar';
 import BooksPage from './Pages/Books/BooksPage';
 import BookDetailPage from './Pages/Books/BookDetailPage';
@@ -15,15 +17,17 @@ import MyAccountPage from './Pages/MyAccount/MyAccountPage';
 import LoginPage from './Pages/LoginPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app">
-          <Navbar />
-          <main className="pt-20 pb-20 mx-auto w-5/6">
-            <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <div className="app">
+            <Navbar />
+            <main className="pt-20 pb-20 mx-auto w-5/6">
+              <Routes>
               <Route path="/" element={<Navigate to="/books" replace />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/books" element={<BooksPage />} />
@@ -103,8 +107,20 @@ function App() {
             </Routes>
           </main>
         </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </Router>
     </AuthProvider>
+  </ErrorBoundary>
   );
 }
 

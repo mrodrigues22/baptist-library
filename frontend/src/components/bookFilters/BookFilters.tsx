@@ -1,6 +1,5 @@
 import React from 'react';
-import { BooksFilters } from '../../hooks/Book/useBooks';
-import { Category } from '../../hooks/Category/useCategories';
+import { BooksFilters, Category } from '../../shared/types';
 import SearchableSelect from '../SearchableSelect/SearchableSelect';
 import Select from '../Select/Select';
 

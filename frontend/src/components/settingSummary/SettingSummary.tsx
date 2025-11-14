@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import EditSettingModal from '../EditSettingModal'
+import EditSettingModal from '../EditSettingModal/EditSettingModal'
 
 interface Props {
     id: number,
