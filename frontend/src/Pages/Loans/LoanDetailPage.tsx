@@ -11,11 +11,29 @@ const LoanDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { loan, loading, error, refetch } = useLoanDetail(id || '');
-  const { hasRole } = useAuth();
+  const { user, hasRole } = useAuth();
   const { checkoutLoan, loading: checkingOut } = useCheckoutLoan();
   const { returnLoan, loading: returning } = useReturnLoan();
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
+  
+  // Check if user has any roles
+  if (!user || !user.roles || user.roles.length === 0) {
+    return (
+      <div className="pt-20 px-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <h2 className="text-xl font-bold mb-2">Acesso Negado</h2>
+          <p>Você não tem permissão para acessar esta página.</p>
+        </div>
+        <button
+          onClick={() => navigate('/')}
+          className="text-blue-600 hover:text-blue-800 font-medium"
+        >
+          ← Voltar para página inicial
+        </button>
+      </div>
+    );
+  }
   
   const canManageLoans = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
 

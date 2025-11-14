@@ -3,9 +3,23 @@ import { useLoans } from '../../hooks/Loan/useLoans';
 import Spinner from '../../components/layout/Spinner';
 import LoanList from '../../components/loanList/LoanList';
 import LoanFilters from '../../components/loanFilters/LoanFilters';
+import { useAuth } from '../../context/AuthContext';
 
 const LoansPage = () => {
+  const { user } = useAuth();
   const { loans, loading, error, refetch, meta, filters, setFilters } = useLoans();
+
+  // Check if user has any roles
+  if (!user || !user.roles || user.roles.length === 0) {
+    return (
+      <div className="pt-20 px-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <h2 className="text-xl font-bold mb-2">Acesso negado</h2>
+          <p>Você não tem permissão para acessar esta página.</p>
+        </div>
+      </div>
+    );
+  }
 
   const safeLoans = loans || [];
   
