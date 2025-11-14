@@ -5,6 +5,7 @@ import { useUserLoans } from '../../hooks/Loan/useUserLoans';
 import Spinner from '../../components/layout/Spinner';
 import { useAuth } from '../../context/AuthContext';
 import { useUpdateUser, UpdateUserFormData } from '../../hooks/User/useUpdateUser';
+import { formatBrazilianPhone, validateBrazilianPhone, validateEmail } from '../../shared/utils/validation';
 
 const UserDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,22 +25,6 @@ const UserDetailPage = () => {
     password: ''
   });
   const [validationErrors, setValidationErrors] = useState<{ email?: string; phoneNumber?: string }>(() => ({}));
-
-  // Phone mask & validation (same as CreateUserPage)
-  const formatBrazilianPhone = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    const limited = numbers.slice(0, 11);
-    if (limited.length <= 2) return limited;
-    if (limited.length <= 6) return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-    if (limited.length <= 10) return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
-    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
-  };
-  const validateBrazilianPhone = (phone: string): boolean => {
-    if (!phone) return true;
-    const numbers = phone.replace(/\D/g, '');
-    return numbers.length === 10 || numbers.length === 11;
-  };
-  const validateEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const beginEdit = () => {
     if (!user) return;

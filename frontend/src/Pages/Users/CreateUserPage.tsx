@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/layout/Spinner';
 import { useCreateUser, CreateUserFormData } from '../../hooks/User/useCreateUser';
 import { useAssignableRoles } from '../../hooks/User/useAssignableRoles';
+import { formatBrazilianPhone, validateBrazilianPhone, validateEmail } from '../../shared/utils/validation';
 
 const CreateUserPage = () => {
   const navigate = useNavigate();
@@ -23,38 +24,6 @@ const CreateUserPage = () => {
     email?: string;
     phoneNumber?: string;
   }>({});
-
-  // Brazilian phone mask: (11) 91234-5678 or (11) 1234-5678
-  const formatBrazilianPhone = (value: string): string => {
-    // Remove all non-digits
-    const numbers = value.replace(/\D/g, '');
-    
-    // Limit to 11 digits (DDD + 9 digits)
-    const limited = numbers.slice(0, 11);
-    
-    // Apply mask
-    if (limited.length <= 2) {
-      return limited;
-    } else if (limited.length <= 6) {
-      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-    } else if (limited.length <= 10) {
-      return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
-    } else {
-      return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
-    }
-  };
-
-  const validateBrazilianPhone = (phone: string): boolean => {
-    if (!phone) return true; // Phone is optional
-    const numbers = phone.replace(/\D/g, '');
-    // Valid formats: 10 digits (DDD + 8 digits) or 11 digits (DDD + 9 digits with 9 at start)
-    return numbers.length === 10 || numbers.length === 11;
-  };
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const handleInputChange = (field: keyof CreateUserFormData, value: string) => {
     let processedValue = value;
