@@ -135,18 +135,18 @@ const PendingUsersPage = () => {
                       
                       <div className="flex gap-2 mt-5">
                         <button
-                          onClick={() => handleApprove(user.id)}
-                          disabled={isProcessing || !selectedRoles[user.id]}
-                          className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                        >
-                          {isProcessing ? 'Processando...' : 'Aprovar'}
-                        </button>
-                        <button
                           onClick={() => handleReject(user.id)}
                           disabled={isProcessing}
                           className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >
                           {isProcessing ? 'Processando...' : 'Rejeitar'}
+                        </button>
+                        <button
+                          onClick={() => handleApprove(user.id)}
+                          disabled={isProcessing || !selectedRoles[user.id]}
+                          className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        >
+                          {isProcessing ? 'Processando...' : 'Aprovar'}
                         </button>
                       </div>
                     </div>

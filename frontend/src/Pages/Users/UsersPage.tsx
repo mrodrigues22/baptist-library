@@ -52,7 +52,7 @@ const UsersPage = () => {
               onClick={() => navigate('/users/pending')}
               className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
             >
-              Aprovar Pendentes
+              Aprovar pendentes
             </button>
           )}
           {canManageUsers && (

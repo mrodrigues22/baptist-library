@@ -189,7 +189,6 @@ namespace Api.Controllers
         // POST: api/users/{id}/assign-role
         [HttpPost("{id}/assign-role")]
         [Authorize(Roles = "Administrador,Desenvolvedor,Bibliotecário")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignRole(string id, [FromBody] AssignRoleDTO assignRoleDto)
         {
             try
