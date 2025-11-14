@@ -120,16 +120,8 @@ const UserDetailPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nome
                 </label>
-                <p className="text-gray-900">{user.firstName}</p>
+                <p className="text-gray-900">{user.firstName} {user.lastName}</p>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sobrenome
-                </label>
-                <p className="text-gray-900">{user.lastName}</p>
-              </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email

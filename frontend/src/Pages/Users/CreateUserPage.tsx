@@ -19,12 +19,97 @@ const CreateUserPage = () => {
     roleName: ''
   });
 
+  const [validationErrors, setValidationErrors] = useState<{
+    email?: string;
+    phoneNumber?: string;
+  }>({});
+
+  // Brazilian phone mask: (11) 91234-5678 or (11) 1234-5678
+  const formatBrazilianPhone = (value: string): string => {
+    // Remove all non-digits
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limit to 11 digits (DDD + 9 digits)
+    const limited = numbers.slice(0, 11);
+    
+    // Apply mask
+    if (limited.length <= 2) {
+      return limited;
+    } else if (limited.length <= 6) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
+    } else if (limited.length <= 10) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
+    } else {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+    }
+  };
+
+  const validateBrazilianPhone = (phone: string): boolean => {
+    if (!phone) return true; // Phone is optional
+    const numbers = phone.replace(/\D/g, '');
+    // Valid formats: 10 digits (DDD + 8 digits) or 11 digits (DDD + 9 digits with 9 at start)
+    return numbers.length === 10 || numbers.length === 11;
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleInputChange = (field: keyof CreateUserFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let processedValue = value;
+    
+    if (field === 'phoneNumber') {
+      processedValue = formatBrazilianPhone(value);
+      
+      // Validate phone
+      if (processedValue && !validateBrazilianPhone(processedValue)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          phoneNumber: 'Telefone inválido. Use o formato: (11) 91234-5678'
+        }));
+      } else {
+        setValidationErrors(prev => {
+          const { phoneNumber, ...rest } = prev;
+          return rest;
+        });
+      }
+    } else if (field === 'email') {
+      // Validate email
+      if (value && !validateEmail(value)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          email: 'Email inválido'
+        }));
+      } else {
+        setValidationErrors(prev => {
+          const { email, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check for validation errors
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    // Additional validation before submit
+    if (formData.email && !validateEmail(formData.email)) {
+      setValidationErrors(prev => ({ ...prev, email: 'Email inválido' }));
+      return;
+    }
+
+    if (formData.phoneNumber && !validateBrazilianPhone(formData.phoneNumber)) {
+      setValidationErrors(prev => ({ ...prev, phoneNumber: 'Telefone inválido' }));
+      return;
+    }
 
     try {
       const createdUser = await createUser(formData);
@@ -120,9 +205,16 @@ const CreateUserPage = () => {
               required
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                validationErrors.email 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary'
+              }`}
               disabled={loading}
             />
+            {validationErrors.email && (
+              <p className="text-sm text-red-500 mt-1">{validationErrors.email}</p>
+            )}
           </div>
 
           {/* Phone Number */}
@@ -135,9 +227,17 @@ const CreateUserPage = () => {
               id="phoneNumber"
               value={formData.phoneNumber}
               onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="(11) 91234-5678"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                validationErrors.phoneNumber 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary'
+              }`}
               disabled={loading}
             />
+            {validationErrors.phoneNumber && (
+              <p className="text-sm text-red-500 mt-1">{validationErrors.phoneNumber}</p>
+            )}
           </div>
 
           {/* Role */}
