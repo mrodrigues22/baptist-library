@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/layout/Spinner';
 import BookList from '../../components/bookList/bookList';
 import BookFilters from '../../components/bookFilters/BookFilters';
+import Pagination from '../../components/pagination/Pagination';
 
 
 const BooksPage = () => {
@@ -103,6 +104,16 @@ const BooksPage = () => {
             copiesAvailable: b.availableCopies,
             borrowedByUser: b.borrowedByCurrentUser
           }))}
+        />
+      )}
+      
+      {/* Pagination */}
+      {meta.totalTitles !== null && meta.pageNumber !== null && meta.pageSize !== null && (
+        <Pagination
+          currentPage={meta.pageNumber}
+          totalCount={meta.totalTitles}
+          pageSize={meta.pageSize}
+          onPageChange={(page) => setFilters({ ...filters, pageNumber: page })}
         />
       )}
       

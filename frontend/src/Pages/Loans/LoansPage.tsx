@@ -3,6 +3,7 @@ import { useLoans } from '../../hooks/Loan/useLoans';
 import Spinner from '../../components/layout/Spinner';
 import LoanList from '../../components/loanList/LoanList';
 import LoanFilters from '../../components/loanFilters/LoanFilters';
+import Pagination from '../../components/pagination/Pagination';
 import { useAuth } from '../../context/AuthContext';
 
 const LoansPage = () => {
@@ -58,6 +59,17 @@ const LoansPage = () => {
           }))}
         />
       )}
+      
+      {/* Pagination */}
+      {meta.totalCount !== null && meta.pageNumber !== null && meta.pageSize !== null && (
+        <Pagination
+          currentPage={meta.pageNumber}
+          totalCount={meta.totalCount}
+          pageSize={meta.pageSize}
+          onPageChange={(page) => setFilters({ ...filters, pageNumber: page })}
+        />
+      )}
+      
       <div className="text-sm text-gray-500 mt-4">
         {meta.totalCount !== null && (
           <div>
