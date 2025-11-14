@@ -11,6 +11,8 @@ namespace Api.Helpers.Loan
 
         public int? Status { get; set; }
 
+        public string? UserId { get; set; }
+
         public string? SortBy { get; set; }
 
         public bool Descending { get; set; } = false;

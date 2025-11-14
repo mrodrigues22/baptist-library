@@ -49,6 +49,12 @@ namespace Api.Repository
                 loans = loans.Where(l => l.StatusId == queryObject.Status.Value);
             }
 
+            // Filter by UserId
+            if (!string.IsNullOrWhiteSpace(queryObject.UserId))
+            {
+                loans = loans.Where(l => l.RequesterUserId == queryObject.UserId);
+            }
+
             if (!string.IsNullOrWhiteSpace(queryObject.SortBy))
             {
                 if (queryObject.SortBy.Equals("requestDate", StringComparison.OrdinalIgnoreCase))
