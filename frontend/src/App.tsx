@@ -4,6 +4,7 @@ import Navbar from './components/layout/Navbar';
 import BooksPage from './Pages/Books/BooksPage';
 import BookDetailPage from './Pages/Books/BookDetailPage';
 import LoansPage from './Pages/Loans/LoansPage';
+import LoanDetailPage from './Pages/Loans/LoanDetailPage';
 import UsersPage from './Pages/Users/UsersPage';
 import SettingsPage from './Pages/MyAccount/SettingsPage';
 import MyAccountPage from './Pages/MyAccount/MyAccountPage';
@@ -28,6 +29,14 @@ function App() {
                 element={
                   <ProtectedRoute requireAuth={true}>
                     <LoansPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/loans/:id" 
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <LoanDetailPage />
                   </ProtectedRoute>
                 } 
               />

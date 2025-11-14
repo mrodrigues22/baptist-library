@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   id: number;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const LoanSummary = ({ id, bookTitle, userName, loanDate, expectedReturnDate, returnDate, status, isOverdue }: Props) => {
+  const navigate = useNavigate();
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -43,8 +45,15 @@ const LoanSummary = ({ id, bookTitle, userName, loanDate, expectedReturnDate, re
     return <span className="px-3 py-1 text-sm font-semibold bg-gray-100 text-gray-800 rounded">{status}</span>;
   };
 
+  const handleClick = () => {
+    navigate(`/loans/${id}`);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-200 relative">
+    <div 
+      onClick={handleClick}
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-200 relative cursor-pointer"
+    >
       <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
         {getStatusBadge()}
       </div>
