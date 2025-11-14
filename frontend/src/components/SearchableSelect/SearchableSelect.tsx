@@ -12,6 +12,8 @@ interface SearchableSelectProps {
   options: Option[];
   placeholder?: string;
   className?: string;
+  searchPlaceholder?: string;
+  noResultsText?: string;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -21,6 +23,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   options,
   placeholder = 'Select...',
   className = '',
+  searchPlaceholder = 'Pesquisar...',
+  noResultsText = 'Nenhum resultado encontrado',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,7 +106,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Pesquisar..."
+              placeholder={searchPlaceholder}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -122,7 +126,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
               ))
             ) : (
               <div className="px-3 py-2 text-gray-500 text-center">
-                Nenhuma categoria encontrada
+                {noResultsText}
               </div>
             )}
           </div>
