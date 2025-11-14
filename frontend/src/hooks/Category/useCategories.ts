@@ -28,9 +28,8 @@ export function useCategories(): UseCategoriesResult {
         setCategories(items);
       })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          setError(err.message || 'Failed to load categories');
-        }
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load categories');
       })
       .finally(() => setLoading(false));
     

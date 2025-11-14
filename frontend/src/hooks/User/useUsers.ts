@@ -120,7 +120,8 @@ export function useUsers(): UseUsersResult {
         setHasPendingUsers(data.hasPendingUsers ?? false);
       })
       .catch(err => {
-        if (err.name !== 'AbortError') setError(err.message || 'Failed to load users');
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load users');
       })
       .finally(() => setLoading(false));
     return () => controller.abort();

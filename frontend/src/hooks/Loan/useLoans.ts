@@ -135,7 +135,8 @@ export function useLoans(): UseLoansResult {
         });
       })
       .catch(err => {
-        if (err.name !== 'AbortError') setError(err.message || 'Failed to load loans');
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load loans');
       })
       .finally(() => setLoading(false));
     return () => controller.abort();

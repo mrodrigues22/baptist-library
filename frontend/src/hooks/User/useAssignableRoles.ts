@@ -14,6 +14,8 @@ export function useAssignableRoles(): UseAssignableRolesResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchAssignableRoles = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -26,7 +28,8 @@ export function useAssignableRoles(): UseAssignableRolesResult {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
-          }
+          },
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -36,6 +39,7 @@ export function useAssignableRoles(): UseAssignableRolesResult {
         const data = await response.json();
         setRoles(data.assignableRoles || []);
       } catch (err: any) {
+        if (err.name === 'AbortError') return;
         setError(err.message || 'Erro ao carregar funções disponíveis.');
         console.error('Error fetching assignable roles:', err);
       } finally {
@@ -44,6 +48,8 @@ export function useAssignableRoles(): UseAssignableRolesResult {
     };
 
     fetchAssignableRoles();
+
+    return () => controller.abort();
   }, []);
 
   return { roles, loading, error };

@@ -62,69 +62,78 @@ export const useUserDetail = (userId: string): UseUserDetailResult => {
   const [assignableRoles, setAssignableRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [trigger, setTrigger] = useState(0);
 
-  const fetchUserDetail = async () => {
+  useEffect(() => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    try {
-      setLoading(true);
-      setError(null);
+    const controller = new AbortController();
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Usuário não autenticado');
-      }
+    const fetchUserDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const url = `${API_BASE}/users/${userId}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Usuário não autenticado');
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const url = `${API_BASE}/users/${userId}`;
         
-        if (response.status === 404) {
-          throw new Error(`Usuário não encontrado (ID: ${userId})`);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          
+          if (response.status === 404) {
+            throw new Error(`Usuário não encontrado (ID: ${userId})`);
+          }
+          if (response.status === 401) {
+            throw new Error('Não autorizado');
+          }
+          if (response.status === 403) {
+            throw new Error('Acesso negado');
+          }
+          throw new Error(errorData.message || `Erro ao carregar usuário: ${response.status}`);
         }
-        if (response.status === 401) {
-          throw new Error('Não autorizado');
-        }
-        if (response.status === 403) {
-          throw new Error('Acesso negado');
-        }
-        throw new Error(errorData.message || `Erro ao carregar usuário: ${response.status}`);
+
+        const data = await response.json();
+        const normalizedUser = normalizeUserDetail(data.user || data);
+        setUser(normalizedUser);
+        setAssignableRoles(data.assignableRoles || []);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao carregar usuário';
+        setError(errorMessage);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await response.json();
-      const normalizedUser = normalizeUserDetail(data.user || data);
-      setUser(normalizedUser);
-      setAssignableRoles(data.assignableRoles || []);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao carregar usuário';
-      setError(errorMessage);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
     fetchUserDetail();
-  }, [userId]);
+
+    return () => controller.abort();
+  }, [userId, trigger]);
+
+  const refetch = () => setTrigger(t => t + 1);
 
   return {
     user,
     assignableRoles,
     loading,
     error,
-    refetch: fetchUserDetail,
+    refetch,
   };
 };

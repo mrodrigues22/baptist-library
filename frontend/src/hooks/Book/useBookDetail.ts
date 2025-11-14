@@ -31,12 +31,11 @@ export function useBookDetail(bookId: number | string): UseBookDetailResult {
         setBook(normalized);
       })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          if (err.status === 404) {
-            setError('Livro não encontrado');
-          } else {
-            setError(err.message || 'Falha ao carregar detalhes do livro');
-          }
+        if (err.name === 'AbortError') return;
+        if (err.status === 404) {
+          setError('Livro não encontrado');
+        } else {
+          setError(err.message || 'Falha ao carregar detalhes do livro');
         }
       })
       .finally(() => setLoading(false));

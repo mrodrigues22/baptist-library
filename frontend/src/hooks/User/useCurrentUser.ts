@@ -83,67 +83,76 @@ export const useCurrentUser = (): UseCurrentUserResult => {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchCurrentUser = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Usuário não autenticado');
-      }
-
-      const userId = getUserIdFromToken();
-      if (!userId) {
-        throw new Error('Não foi possível identificar o usuário');
-      }
-
-      const url = `${API_BASE}/users/${userId}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        
-        if (response.status === 404) {
-          throw new Error('Usuário não encontrado');
-        }
-        if (response.status === 401) {
-          throw new Error('Não autorizado');
-        }
-        if (response.status === 403) {
-          throw new Error('Acesso negado');
-        }
-        throw new Error(errorData.message || `Erro ao carregar dados do usuário: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const normalizedUser = normalizeCurrentUser(data.user || data);
-      setUser(normalizedUser);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao carregar dados do usuário';
-      setError(errorMessage);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [trigger, setTrigger] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+    
+    const fetchCurrentUser = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Usuário não autenticado');
+        }
+
+        const userId = getUserIdFromToken();
+        if (!userId) {
+          throw new Error('Não foi possível identificar o usuário');
+        }
+
+        const url = `${API_BASE}/users/${userId}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          
+          if (response.status === 404) {
+            throw new Error('Usuário não encontrado');
+          }
+          if (response.status === 401) {
+            throw new Error('Não autorizado');
+          }
+          if (response.status === 403) {
+            throw new Error('Acesso negado');
+          }
+          throw new Error(errorData.message || `Erro ao carregar dados do usuário: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const normalizedUser = normalizeCurrentUser(data.user || data);
+        setUser(normalizedUser);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao carregar dados do usuário';
+        setError(errorMessage);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCurrentUser();
-  }, []);
+    
+    return () => controller.abort();
+  }, [trigger]);
+
+  const refetch = () => setTrigger(t => t + 1);
 
   return {
     user,
     loading,
     error,
-    refetch: fetchCurrentUser,
+    refetch,
   };
 };

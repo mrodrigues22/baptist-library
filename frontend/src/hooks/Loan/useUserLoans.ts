@@ -115,9 +115,8 @@ export function useUserLoans(userId: string): UseUserLoansResult {
         setLoans(items.map(normalizeItem));
       })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          setError(err.message || 'Failed to load user loans');
-        }
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load user loans');
       })
       .finally(() => setLoading(false));
       

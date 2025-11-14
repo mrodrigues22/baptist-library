@@ -22,24 +22,29 @@ export const useUserSearch = (searchTerm: string, enabled: boolean = true) => {
       return;
     }
 
+    const controller = new AbortController();
     const debounceTimer = setTimeout(() => {
-      fetchUsers(searchTerm);
+      fetchUsers(searchTerm, controller.signal);
     }, 300);
 
-    return () => clearTimeout(debounceTimer);
+    return () => {
+      clearTimeout(debounceTimer);
+      controller.abort();
+    };
   }, [searchTerm, enabled]);
 
-  const fetchUsers = async (search: string) => {
+  const fetchUsers = async (search: string, signal: AbortSignal) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await authenticatedGet(`/users?pageSize=100&filter=${encodeURIComponent(search)}`);
+      const response = await authenticatedGet(`/users?pageSize=100&filter=${encodeURIComponent(search)}`, signal);
       if (response.users) {
         // Filter only active users
         const activeUsers = response.users.filter((u: User) => u.active);
         setUsers(activeUsers);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
       setError('Erro ao carregar usuários');
       console.error('Error fetching users:', err);
     } finally {

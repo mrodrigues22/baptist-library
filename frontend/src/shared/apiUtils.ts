@@ -264,13 +264,14 @@ export const publicGet = async <T = any>(endpoint: string, signal?: AbortSignal)
 /**
  * Login user with email and password
  */
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (email: string, password: string, signal?: AbortSignal) => {
   const response = await fetch(`${API_BASE_URL}/account/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password }),
+    signal,
   });
   
   if (!response.ok) {
@@ -289,13 +290,14 @@ export const registerUser = async (userData: {
   password: string;
   firstName: string;
   lastName: string;
-}) => {
+}, signal?: AbortSignal) => {
   const response = await fetch(`${API_BASE_URL}/account/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(userData),
+    signal,
   });
   
   if (!response.ok) {

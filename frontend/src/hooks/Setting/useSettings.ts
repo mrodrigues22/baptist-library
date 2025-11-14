@@ -31,9 +31,8 @@ export function useSettings(): UseSettingsResult {
         }
       })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          setError(err.message || 'Failed to load settings');
-        }
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load settings');
       })
       .finally(() => setLoading(false));
     

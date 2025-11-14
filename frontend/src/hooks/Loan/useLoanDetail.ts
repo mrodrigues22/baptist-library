@@ -107,7 +107,8 @@ export function useLoanDetail(loanId: number | string): UseLoanDetailResult {
         setLoan(normalizeLoanDetail(data));
       })
       .catch(err => {
-        if (err.name !== 'AbortError') setError(err.message || 'Failed to load loan details');
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load loan details');
       })
       .finally(() => setLoading(false));
 

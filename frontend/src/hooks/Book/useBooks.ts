@@ -71,9 +71,8 @@ export function useBooks(): UseBooksResult {
         });
       })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          setError(err.message || 'Failed to load books');
-        }
+        if (err.name === 'AbortError') return;
+        setError(err.message || 'Failed to load books');
       })
       .finally(() => setLoading(false));
     
