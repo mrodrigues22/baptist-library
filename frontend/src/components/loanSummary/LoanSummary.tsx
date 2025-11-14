@@ -47,11 +47,6 @@ const LoanSummary = ({ id, bookTitle, userName, loanDate, expectedReturnDate, re
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-200 relative">
       <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
         {getStatusBadge()}
-        {!returnDate && (
-          <span className="text-xs text-gray-600">
-            Devolução: {formatDate(expectedReturnDate)}
-          </span>
-        )}
       </div>
       
       <h3 className="text-xl font-bold text-gray-800 mb-0 pr-32">
