@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/layout/Spinner';
 import { useCreateUser, CreateUserFormData } from '../../hooks/User/useCreateUser';
+import { useAssignableRoles } from '../../hooks/User/useAssignableRoles';
 
 const CreateUserPage = () => {
   const navigate = useNavigate();
   const { createUser, loading, error, success } = useCreateUser();
+  const { roles: assignableRoles, loading: rolesLoading, error: rolesError } = useAssignableRoles();
 
   const [formData, setFormData] = useState<CreateUserFormData>({
     firstName: '',
@@ -49,6 +51,18 @@ const CreateUserPage = () => {
       {/* Main card */}
       <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">Adicionar novo usuário</h1>
+
+        {rolesLoading && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-4">
+            Carregando funções disponíveis...
+          </div>
+        )}
+
+        {rolesError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {rolesError}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -137,13 +151,14 @@ const CreateUserPage = () => {
               value={formData.roleName}
               onChange={(e) => handleInputChange('roleName', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              disabled={loading}
+              disabled={loading || rolesLoading}
             >
               <option value="">Selecione uma função</option>
-              <option value="Membro">Membro</option>
-              <option value="Bibliotecário">Bibliotecário</option>
-              <option value="Administrador">Administrador</option>
-              <option value="Desenvolvedor">Desenvolvedor</option>
+              {assignableRoles.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -168,7 +183,7 @@ const CreateUserPage = () => {
           {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirmar Senha <span className="text-red-500">*</span>
+              Confirmar senha <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -186,7 +201,7 @@ const CreateUserPage = () => {
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || rolesLoading}
               className="flex-1 bg-primary hover:bg-secondary text-white font-medium py-3 px-6 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loading ? (
@@ -195,13 +210,13 @@ const CreateUserPage = () => {
                   <span className="ml-2">Criando...</span>
                 </>
               ) : (
-                'Criar Usuário'
+                'Criar usuário'
               )}
             </button>
             <button
               type="button"
               onClick={() => navigate('/users')}
-              disabled={loading}
+              disabled={loading || rolesLoading}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
