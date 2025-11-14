@@ -3,13 +3,23 @@
  * Centralized configuration for API endpoints and settings
  */
 
+import { getApiBaseUrl as getEnvApiBaseUrl } from '../utils/env';
+
 /**
  * Get the API base URL from environment variables
  * Removes trailing slashes for consistency
  */
 export const getApiBaseUrl = (): string => {
-  const baseUrl = process.env.REACT_APP_API_BASE || (window as any).__API_BASE__ || '';
-  return baseUrl.replace(/\/+$/, '');
+  try {
+    return getEnvApiBaseUrl();
+  } catch (error) {
+    // Fallback for runtime scenarios (window injection for dynamic config)
+    const fallback = (window as any).__API_BASE__ || '';
+    if (!fallback) {
+      throw new Error('API Base URL is not configured. Check your environment variables.');
+    }
+    return fallback.replace(/\/+$/, '');
+  }
 };
 
 /**

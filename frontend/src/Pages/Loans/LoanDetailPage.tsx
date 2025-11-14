@@ -5,6 +5,7 @@ import { useCheckoutLoan } from '../../hooks/Loan/useCheckoutLoan';
 import { useReturnLoan } from '../../hooks/Loan/useReturnLoan';
 import Spinner from '../../components/layout/Spinner';
 import { useAuth } from '../../context/AuthContext';
+import { logError } from '../../shared/utils/logger';
 
 const LoanDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +25,7 @@ const LoanDetailPage = () => {
       setShowCheckoutModal(false);
       refetch();
     } catch (err) {
-      console.error('Error checking out loan:', err);
+      logError('Error checking out loan:', err);
     }
   };
 
@@ -34,7 +35,7 @@ const LoanDetailPage = () => {
       setShowReturnModal(false);
       refetch();
     } catch (err) {
-      console.error('Error returning loan:', err);
+      logError('Error returning loan:', err);
     }
   };
 

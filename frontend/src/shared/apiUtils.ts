@@ -5,16 +5,68 @@
 
 import { API_BASE_URL } from './api/config';
 import { toast } from 'react-toastify';
+import { logError } from './utils/logger';
 
 // ============================================================================
 // TOKEN MANAGEMENT
 // ============================================================================
 
+interface DecodedToken {
+  exp: number;
+  email: string;
+  [key: string]: any;
+}
+
+/**
+ * Parse JWT token
+ */
+const parseJwt = (token: string): DecodedToken | null => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    logError('Error parsing JWT:', error);
+    return null;
+  }
+};
+
+/**
+ * Check if token is expired
+ */
+const isTokenExpired = (token: string): boolean => {
+  const decoded = parseJwt(token);
+  if (!decoded || !decoded.exp) return true;
+  
+  // Check if token expires in less than 5 minutes (buffer time)
+  const expirationTime = decoded.exp * 1000;
+  const currentTime = Date.now();
+  const bufferTime = 5 * 60 * 1000; // 5 minutes
+  
+  return expirationTime - currentTime < bufferTime;
+};
+
 /**
  * Get the JWT token from localStorage
+ * Returns null if token is expired
  */
 export const getToken = (): string | null => {
-  return localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  
+  if (isTokenExpired(token)) {
+    clearToken();
+    window.dispatchEvent(new Event('unauthorized'));
+    return null;
+  }
+  
+  return token;
 };
 
 /**

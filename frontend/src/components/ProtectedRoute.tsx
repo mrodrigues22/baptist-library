@@ -17,17 +17,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Wait for auth to finish loading before redirecting
   if (isLoading) {
-    return null; // Or you could return a loading spinner here
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   // If authentication is required but user is not logged in
   if (requireAuth && !isLoggedIn) {
-    return <Navigate to="/books" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // If specific roles are required but user doesn't have them
   if (requiredRoles.length > 0 && !hasRole(requiredRoles)) {
-    return <Navigate to="/books" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;

@@ -7,6 +7,7 @@ import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
 import { useAuth } from '../../context/AuthContext';
 import { useBorrowForSelf } from '../../hooks/Loan/useBorrowForSelf';
 import { useDeleteBook } from '../../hooks/Book/useDeleteBook';
+import { logError } from '../../shared/utils/logger';
 
 const BookDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +26,7 @@ const BookDetailPage = () => {
       await borrowBook(parseInt(id || '0'));
       refetch();
     } catch (err) {
-      console.error('Error borrowing book:', err);
+      logError('Error borrowing book:', err);
     }
   };
 
@@ -35,7 +36,7 @@ const BookDetailPage = () => {
       setIsDeleteModalOpen(false);
       navigate('/books');
     } catch (err) {
-      console.error('Error deleting book:', err);
+      logError('Error deleting book:', err);
     }
   };
 

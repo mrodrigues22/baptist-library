@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logError } from '../../shared/utils/logger';
 
 const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
 
@@ -41,7 +42,7 @@ export function useAssignableRoles(): UseAssignableRolesResult {
       } catch (err: any) {
         if (err.name === 'AbortError') return;
         setError(err.message || 'Erro ao carregar funções disponíveis.');
-        console.error('Error fetching assignable roles:', err);
+        logError('Error fetching assignable roles:', err);
       } finally {
         setLoading(false);
       }

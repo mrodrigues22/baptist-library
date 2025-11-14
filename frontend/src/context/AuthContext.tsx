@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AuthUser } from '../shared/types';
 import { getToken, setToken as saveToken, clearToken } from '../shared/apiUtils';
+import { logError } from '../shared/utils/logger';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -38,7 +39,7 @@ const parseJwt = (token: string): any => {
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Error parsing JWT:', error);
+    logError('Error parsing JWT:', error);
     return null;
   }
 };

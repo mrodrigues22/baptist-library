@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUserSearch } from '../hooks/User/useUserSearch';
 import { useCreateLoan } from '../hooks/Loan/useCreateLoan';
+import { logError } from '../shared/utils/logger';
 
 interface User {
   id: string;
@@ -79,7 +80,7 @@ const LoanBookModal: React.FC<LoanBookModalProps> = ({
       onClose();
     } catch (err) {
       // Error is handled by the hook
-      console.error('Error creating loan:', err);
+      logError('Error creating loan:', err);
     }
   };
 

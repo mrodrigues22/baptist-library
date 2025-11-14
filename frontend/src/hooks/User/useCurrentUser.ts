@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logError } from '../../shared/utils/logger';
 
 const API_BASE = (process.env.REACT_APP_API_BASE || (window as any).__API_BASE__)?.replace(/\/+$/, '') || '';
 
@@ -74,7 +75,7 @@ const getUserIdFromToken = (): string | null => {
     // JWT standard 'sub' claim contains the user ID
     return decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || null;
   } catch (error) {
-    console.error('Error parsing JWT:', error);
+    logError('Error parsing JWT:', error);
     return null;
   }
 };
