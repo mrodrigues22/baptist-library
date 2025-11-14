@@ -15,11 +15,12 @@ const BookDetailPage = () => {
   const { book, loading, error, refetch } = useBookDetail(id || '');
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { hasRole, isLoggedIn } = useAuth();
+  const { hasRole, isLoggedIn, user } = useAuth();
   const { borrowBook, loading: borrowing } = useBorrowForSelf();
   const { deleteBook, loading: deleting } = useDeleteBook();
   
   const canLoanBooks = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
+  const hasNoRoles = isLoggedIn && (!user?.roles || user.roles.length === 0);
 
   const handleBorrowForSelf = async () => {
     try {
@@ -44,6 +45,9 @@ const BookDetailPage = () => {
     if (!isLoggedIn) {
       return 'Você precisa estar autenticado para pegar emprestado';
     }
+    if (hasNoRoles) {
+      return 'Você precisa de permissões para pegar livros emprestados';
+    }
     if (book?.borrowedByCurrentUser) {
       return 'Você já possui este livro emprestado';
     }
@@ -53,7 +57,7 @@ const BookDetailPage = () => {
     return '';
   };
 
-  const isBorrowDisabled = !isLoggedIn || book?.borrowedByCurrentUser || book?.availableCopies === 0;
+  const isBorrowDisabled = !isLoggedIn || hasNoRoles || book?.borrowedByCurrentUser || book?.availableCopies === 0;
 
   if (loading) {
     return (
