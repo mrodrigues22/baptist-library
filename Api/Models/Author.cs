@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.Models;
+namespace Library.Api.Models;
 
 [Table("Author")]
 [Microsoft.EntityFrameworkCore.Index("FullName", Name = "IX_Author_FullName")]

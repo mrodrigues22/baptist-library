@@ -1,4 +1,4 @@
-﻿using Library.Models;
+﻿using Library.Api.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace Library.Data

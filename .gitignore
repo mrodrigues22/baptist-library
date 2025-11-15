@@ -36,3 +36,5 @@ appsettings.json
 /Harvester/appsettings.json
 /CropForce/appsettings.Development.json
 /CropForce/appsettings.Development.json
+/node_modules
+node_modules

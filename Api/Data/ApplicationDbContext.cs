@@ -1,7 +1,10 @@
-﻿using Library.Models;
+﻿using Library.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-public class ApplicationDbContext : DbContext
+namespace Api.Data
+{
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -134,4 +137,5 @@ public class ApplicationDbContext : DbContext
 
     }
 
+    }
 }

@@ -1,0 +1,550 @@
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useUserDetail } from '../../hooks/User/useUserDetail';
+import { useUserLoans } from '../../hooks/Loan/useUserLoans';
+import Spinner from '../../components/layout/Spinner';
+import { useAuth } from '../../context/AuthContext';
+import { useUpdateUser, UpdateUserFormData } from '../../hooks/User/useUpdateUser';
+import { useAssignRole } from '../../hooks/User/useAssignRole';
+import { useDeleteUser } from '../../hooks/User/useDeleteUser';
+import { formatBrazilianPhone, validateBrazilianPhone, validateEmail } from '../../shared/utils/validation';
+
+const UserDetailPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user, assignableRoles, loading, error, refetch } = useUserDetail(id || '');
+  const { loans, loading: loansLoading, error: loansError } = useUserLoans(id || '');
+  const { hasRole } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const { updateUser, loading: updateLoading, error: updateError, success: updateSuccess } = useUpdateUser();
+  const { assignRole, loading: assignRoleLoading, error: assignRoleError } = useAssignRole();
+  const { deleteUser, loading: deleteLoading, error: deleteError } = useDeleteUser();
+  const [isChangingRole, setIsChangingRole] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [roleChangeSuccess, setRoleChangeSuccess] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [formData, setFormData] = useState<UpdateUserFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    password: ''
+  });
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; phoneNumber?: string }>(() => ({}));
+
+  const beginEdit = () => {
+    if (!user) return;
+    setFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber || '',
+      password: ''
+    });
+    setIsEditing(true);
+    setSaveError(null);
+    setValidationErrors({});
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setSaveError(null);
+    setSaving(false);
+  };
+
+  const handleInputChange = (field: keyof UpdateUserFormData, value: string) => {
+    let processedValue = value;
+    if (field === 'phoneNumber') {
+      processedValue = formatBrazilianPhone(value);
+      if (processedValue && !validateBrazilianPhone(processedValue)) {
+        setValidationErrors(prev => ({ ...prev, phoneNumber: 'Telefone inválido. Use o formato: (11) 91234-5678' }));
+      } else {
+        setValidationErrors(prev => { const { phoneNumber, ...rest } = prev; return rest; });
+      }
+    } else if (field === 'email') {
+      if (value && !validateEmail(value)) {
+        setValidationErrors(prev => ({ ...prev, email: 'Email inválido' }));
+      } else {
+        setValidationErrors(prev => { const { email, ...rest } = prev; return rest; });
+      }
+    }
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    if (Object.keys(validationErrors).length > 0) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await updateUser(user.id, formData);
+      await refetch();
+      setIsEditing(false);
+    } catch (err: any) {
+      setSaveError(err.message || 'Erro desconhecido');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRoleChange = async () => {
+    if (!user || !selectedRole) return;
+    setRoleChangeSuccess(null);
+    try {
+      await assignRole(user.id, selectedRole);
+      await refetch();
+      setRoleChangeSuccess(`Perfil alterado para ${selectedRole} com sucesso!`);
+      setIsChangingRole(false);
+      setSelectedRole('');
+      setTimeout(() => setRoleChangeSuccess(null), 5000);
+    } catch (err: any) {
+      // Error is handled by the hook
+    }
+  };
+
+  const beginRoleChange = () => {
+    setIsChangingRole(true);
+    setRoleChangeSuccess(null);
+    setSelectedRole(user?.roles[0] || '');
+  };
+
+  const cancelRoleChange = () => {
+    setIsChangingRole(false);
+    setSelectedRole('');
+  };
+
+  const handleDeleteUser = async () => {
+    if (!user) return;
+    try {
+      await deleteUser(user.id);
+      navigate('/users');
+    } catch (err: any) {
+      // Error is handled by the hook
+    }
+  };
+  
+  const canManageUsers = hasRole(['Administrador', 'Bibliotecário', 'Desenvolvedor']);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Spinner size={60} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pt-20 px-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          Erro: {error}
+        </div>
+        <button
+          onClick={() => navigate('/users')}
+          className="text-blue-600 hover:text-blue-800 font-medium"
+        >
+          ← Voltar para usuários
+        </button>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="pt-20 px-6">
+        <div className="text-gray-600 mb-4">Usuário não encontrado.</div>
+        <button
+          onClick={() => navigate('/users')}
+          className="text-blue-600 hover:text-blue-800 font-medium"
+        >
+          ← Voltar para usuários
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-20 px-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate('/users')}
+          className="text-blue-600 hover:text-blue-800 font-medium mb-4 inline-flex items-center"
+        >
+          ← Voltar para usuários
+        </button>
+        
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {user.firstName} {user.lastName}
+            </h1>
+            {user.roles && user.roles.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {user.roles.map((role, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                  >
+                    {role}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">Nenhuma permissão atribuída</p>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              user.active 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {user.active ? 'Ativo' : 'Inativo'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - User Information */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Personal Information Card */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Informações Pessoais</h2>
+              {canManageUsers && (
+                <div className="flex items-center gap-3">
+                  {!isEditing && (
+                    <button
+                      onClick={beginEdit}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    >
+                      Editar
+                    </button>
+                  )}
+                  {isEditing && (
+                    <>
+                      <button
+                        onClick={cancelEdit}
+                        disabled={saving}
+                        className="text-gray-600 hover:text-gray-800 font-medium text-sm disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {saving ? 'Salvando...' : 'Salvar'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-4">
+              {!isEditing && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    <p className="text-gray-900">{user.firstName} {user.lastName}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <p className="text-gray-900">{user.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                    <p className="text-gray-900">{user.phoneNumber || 'Não informado'}</p>
+                  </div>
+                </>
+              )}
+              {isEditing && (
+                <>
+                  {saveError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+                      {saveError}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Primeiro Nome</label>
+                      <input
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sobrenome</label>
+                      <input
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${validationErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                        disabled={saving}
+                      />
+                      {validationErrors.email && <p className="text-xs text-red-600 mt-1">{validationErrors.email}</p>}
+                    </div>
+                    <div className="md:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                      <input
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        placeholder="(11) 91234-5678"
+                        className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${validationErrors.phoneNumber ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                        disabled={saving}
+                      />
+                      {validationErrors.phoneNumber && <p className="text-xs text-red-600 mt-1">{validationErrors.phoneNumber}</p>}
+                    </div>
+                    <div className="md:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nova Senha (opcional)</label>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password || ''}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={saving}
+                        placeholder="Mínimo 8 caracteres"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Role Management Card */}
+          {canManageUsers && assignableRoles.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Gerenciar Perfil</h2>
+                {!isChangingRole && (
+                  <button
+                    onClick={beginRoleChange}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  >
+                    Alterar perfil
+                  </button>
+                )}
+              </div>
+
+              {roleChangeSuccess && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm mb-4">
+                  {roleChangeSuccess}
+                </div>
+              )}
+
+              {assignRoleError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mb-4">
+                  {assignRoleError}
+                </div>
+              )}
+
+              {!isChangingRole ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Perfil Atual</label>
+                  <div className="flex flex-wrap gap-2">
+                    {user.roles && user.roles.length > 0 ? (
+                      user.roles.map((role, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                        >
+                          {role}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-sm">Nenhum perfil atribuído</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Selecionar Novo Perfil
+                  </label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                    disabled={assignRoleLoading}
+                  >
+                    <option value="">Selecione um perfil</option>
+                    {assignableRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={cancelRoleChange}
+                      disabled={assignRoleLoading}
+                      className="text-gray-600 hover:text-gray-800 font-medium text-sm disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleRoleChange}
+                      disabled={assignRoleLoading || !selectedRole}
+                      className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {assignRoleLoading ? 'Alterando...' : 'Confirmar alteração'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          
+          {/* Loan History */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Histórico de empréstimos</h2>
+            
+            {loansLoading ? (
+              <div className="flex justify-center py-8">
+                <Spinner size={40} />
+              </div>
+            ) : loansError ? (
+              <div className="text-center py-8 text-red-600">
+                <p>Erro ao carregar empréstimos: {loansError}</p>
+              </div>
+            ) : !loans || loans.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>Nenhum empréstimo encontrado</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {loans.map((loan) => (
+                  <div
+                    key={loan.id}
+                    onClick={() => navigate(`/loans/${loan.id}`)}
+                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">
+                          {loan.bookTitle}
+                        </h3>
+                        <div className="text-sm text-gray-600">
+                          {new Date(loan.requestDate).toLocaleDateString('pt-BR')}
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {loan.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column - Statistics */}
+        <div className="space-y-6">
+          {/* Statistics Card */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Estatísticas</h2>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="text-sm text-blue-600 font-medium mb-1">
+                  Empréstimos ativos
+                </div>
+                <div className="text-3xl font-bold text-blue-900">
+                  {user.activeLoans}
+                </div>
+              </div>
+              
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-sm text-green-600 font-medium mb-1">
+                  Total de empréstimos
+                </div>
+                <div className="text-3xl font-bold text-green-900">
+                  {user.totalLoans}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Delete User Card */}
+          {canManageUsers && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Zona de perigo</h2>
+              {deleteError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mb-4">
+                  {deleteError}
+                </div>
+              )}
+              <p className="text-sm text-gray-600 mb-4">
+                Deletar este usuário irá remover permanentemente todos os seus dados. Esta ação não pode ser desfeita.
+              </p>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700 transition-colors"
+              >
+                Deletar usuário
+              </button>
+            </div>
+          )}
+          
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Confirmar exclusão</h3>
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja deletar o usuário <strong>{user.firstName} {user.lastName}</strong>? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleteLoading}
+                className="px-4 py-2 border border-gray-300 rounded text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={deleteLoading}
+                className="px-4 py-2 bg-red-600 text-white rounded font-medium hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleteLoading ? 'Deletando...' : 'Deletar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserDetailPage;

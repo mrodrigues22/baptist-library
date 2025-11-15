@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.Models;
+namespace Library.Api.Models;
 
 [Table("Book")]
 [Microsoft.EntityFrameworkCore.Index("Title", Name = "IX_Book_Title")]
@@ -92,6 +92,14 @@ public partial class Book
     [InverseProperty("Books")]
     [Display(Name = "Editora")]
     public virtual Publisher Publisher { get; set; }
+
+    [ForeignKey("CreatedByUserId")]
+    [Display(Name = "Cadastrado por")]
+    public virtual ApplicationUser CreatedByUser { get; set; }
+
+    [ForeignKey("ModifiedByUserId")]
+    [Display(Name = "Modificado por")]
+    public virtual ApplicationUser ModifiedByUser { get; set; }
 
     [StringLength(255)]
     [Display(Name = "Origem")]

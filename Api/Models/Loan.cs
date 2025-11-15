@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.Models;
+namespace Library.Api.Models;
 
 [Table("Loan")]
 [Microsoft.EntityFrameworkCore.Index("RequesterUserId", Name = "IX_Loan_RequesterUserId")]
@@ -65,11 +65,11 @@ public partial class Loan
 
     [ForeignKey("CheckedOutBy")]
     [Display(Name = "Entregue por")]
-    public virtual ApplicationUser EntreguePor { get; set; }
+    public virtual ApplicationUser CheckedOutByUser { get; set; }
 
     [ForeignKey("ReceivedBy")]
     [Display(Name = "Recebido por")]
-    public virtual ApplicationUser RecebidoPor { get; set; }
+    public virtual ApplicationUser ReceivedByUser { get; set; }
 
 
 }
