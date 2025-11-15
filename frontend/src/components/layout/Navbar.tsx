@@ -30,7 +30,7 @@ const Navbar = () => {
                     {/* RIGHT SIDE */}
                     {isAboveMediumScreens ? (
                         <>
-                            <div className={`flex items-center justify-end mr-10 w-full gap-8 text-sm`}>
+                            <div className={`flex items-center justify-end mr-10 w-full gap-5 text-sm whitespace-nowrap`}>
                                 <Link page="Início" to="/" />
                                 <Link page="Acervo" to="/books" />
                                 {isLoggedIn && <Link page="Empréstimos" to="/loans" />}
