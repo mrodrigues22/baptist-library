@@ -33,7 +33,7 @@ const HomePage = () => {
 
   return (
     <div 
-      className="h-screen flex items-center justify-center relative overflow-hidden"
+      className="h-full flex items-center justify-center relative overflow-hidden"
       style={{
         backgroundImage: 'url(/hero-image.jpg)',
         backgroundSize: 'cover',
